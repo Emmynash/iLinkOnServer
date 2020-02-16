@@ -1,6 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Length, IsPhoneNumber } from 'class-validator';
-import { config } from '@config';
+import { Length } from 'class-validator';
 import { GroupMember } from './GroupMember';
 
 @Entity()
