@@ -18,6 +18,12 @@
     "node": "10.x.x",
     "npm": "6.x.x"
   },
+  "_moduleAliases": {
+    "@config": "dist/config",
+    "@entities": "dist/entity",
+    "@shared": "dist/shared",
+    "@middleware": "dist/middleware"
+  },
   "author": "Kator James",
   "license": "MIT",
   "homepage": "https://github.com/16kilobyte/ilinkon#readme",
