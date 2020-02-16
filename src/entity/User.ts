@@ -1,13 +1,20 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Length, IsEmail, IsPhoneNumber } from 'class-validator';
+import { Interest } from './Interest';
+import { GroupMember } from './GroupMember';
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
+    @Column()
+    @Length(10, 800)
+    profilePhoto?: string;
+
     @Column({
-        length: 80
+        length: 80,
+        nullable: false,
     })
     @Length(2, 80)
     fName: string;
@@ -25,17 +32,24 @@ export class User {
     mName: string;
 
     @Column({
-        length: 100
+        length: 100,
     })
-    @Length(10, 100)
+    @Length(8, 100)
     @IsEmail()
-    email: string;
+    email?: string;
 
     @Column({
         length: 14,
+        nullable: false,
     })
     @IsPhoneNumber('ZZ')
     phone: string;
+
+    @Column({ type: 'numeric', array: true, default: '{}' })
+    public interests: number[];
+
+    @OneToMany(type => GroupMember, groupMember => groupMember.member)
+    public groupMembers: GroupMember[];
 
     @CreateDateColumn()
     public createdAt: Date;

@@ -8,7 +8,9 @@ export class OneTimePassword {
     id: number;
 
     @Column({
-        length: 14
+        length: 14,
+        nullable: false,
+        unique: true,
     })
     @IsPhoneNumber('ZZ')
     phone: string;

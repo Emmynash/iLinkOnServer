@@ -15,6 +15,13 @@ protectedRouter.put('/users/:id', auth(), controller.user.updateUser);
 protectedRouter.delete('/users/:id', auth(), controller.user.deleteUser);
 protectedRouter.delete('/testusers', auth(), controller.user.deleteTestUsers);
 
+// Group routes
+protectedRouter.get('/groups', auth(), controller.group.getGroups);
+protectedRouter.get('/groups/:id', auth(), controller.group.getGroup);
+protectedRouter.post('/groups', auth(), controller.group.createGroup);
+protectedRouter.put('/groups/:id', auth(), controller.group.updateGroup);
+protectedRouter.delete('/groups/:id', auth(), controller.group.deleteGroup);
+
 // Swagger endpoint
 protectedRouter.swagger({
     title: 'ilinkon-server',

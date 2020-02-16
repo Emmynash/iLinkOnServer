@@ -7,8 +7,8 @@ import { sign } from 'jsonwebtoken';
 import { User, userSchema, otpSchema, OneTimePassword } from '@entities';
 import { generateOTP, sendSMS } from '@shared';
 import { config } from '@config';
+import { GenerateOTPSampleResponses, VerifyOTPSampleResponses, CreateUserSampleResponse } from './_common';
 
-@responsesAll({ 200: { description: 'success'}, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Auth'])
 export default class AuthController {
 
@@ -17,6 +17,7 @@ export default class AuthController {
     @body({
         phone: { type: 'string', required: true, example: '+2348181484568', description: 'Phone number requesting OTP' },
     })
+    @responses(GenerateOTPSampleResponses)
     public static async generateOTP(ctx: BaseContext, next: () => void) {
 
         // get a OTP repository to perform operations with user
@@ -52,6 +53,7 @@ export default class AuthController {
     @request('post', '/auth/verify-otp')
     @summary('Verify OTP for signup or login')
     @body(otpSchema)
+    @responses(VerifyOTPSampleResponses)
     public static async verifyOTP(ctx: BaseContext, next: () => void) {
 
         // get a OTP repository to perform operations with user
@@ -86,27 +88,7 @@ export default class AuthController {
     @request('post', '/auth/register')
     @summary('Register new user')
     @body(userSchema)
-    @responses({ 200: {
-        description: 'User registration successful',
-        example: {
-            'application/json': {
-                'meta': {
-                    'status': 200,
-                    'message': 'The specified e-mail address already exists'
-                },
-                'data': {
-                    'fName': 'Kator',
-                    'mName': 'Bryan',
-                    'lName': 'James',
-                    'phone': '+2348181484568',
-                    'email': 'kator95@gmail.com',
-                    'id': 1,
-                    'createdAt': '2020-02-16T18:34:01.255Z',
-                    'updatedAt': '2020-02-16T18:34:01.255Z',
-                }
-              }
-        }
-    }})
+    @responses(CreateUserSampleResponse)
     public static async createUser(ctx: BaseContext, next: () => void) {
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);
@@ -126,17 +108,25 @@ export default class AuthController {
             // return BAD REQUEST status code and errors array
             ctx.status = HttpStatus.BAD_REQUEST;
             ctx.state.message = errors;
-        } else if (await userRepository.findOne({ email: userToBeSaved.email })) {
-            // return BAD REQUEST status code and email already exists error
-            ctx.status = HttpStatus.BAD_REQUEST;
-            ctx.state.message = 'The specified e-mail address already exists';
+            await next();
         } else {
-            // save the user contained in the POST body
-            const user = await userRepository.save(userToBeSaved);
-            // return CREATED status code and updated user
-            ctx.status = 201;
-            ctx.state.data = user;
+            const existingUser = await userRepository.findOne({ phone: userToBeSaved.phone });
+            if (existingUser) {
+                // return BAD REQUEST status code and email already exists error
+                ctx.status = HttpStatus.BAD_REQUEST;
+                ctx.state.message = 'The specified phone number already exists';
+                await next();
+            } else {
+                // save the user contained in the POST body
+                const user = await userRepository.create(userToBeSaved);
+                // return CREATED status code and updated user
+                ctx.status = HttpStatus.CREATED;
+                ctx.state.data = {
+                    user,
+                    token: sign({ user }, config.jwtSecret, { expiresIn: '250000h' }),
+                };
+                await next();
+            }
         }
-        await next();
     }
 }
