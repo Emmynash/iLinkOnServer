@@ -1,9 +1,9 @@
 import { BaseContext } from 'koa';
-import { getManager, Repository, Not, Equal, Like } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
-import { schoolSchema, Interest } from '@entities';
-import httpStatus = require('http-status');
+import { Interest, interestSchema } from '@entities';
+import httpStatus from 'http-status';
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Interest'])
@@ -26,7 +26,7 @@ export default class UserController {
 
     @request('post', '/interests')
     @summary('Create an interest')
-    @body(schoolSchema)
+    @body(interestSchema)
     public static async createInterest(ctx: BaseContext, next: () => void) {
 
         // get a interest repository to perform operations with interest
