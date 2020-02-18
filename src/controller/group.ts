@@ -69,11 +69,11 @@ export default class UserController {
         if (errors.length > 0) {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
-            ctx.body = errors;
+            ctx.state.message = errors;
         } else if (await groupRepository.findOne({ name: groupToBeSaved.name })) {
             // return BAD REQUEST status code and name already exists error
             ctx.status = httpStatus.BAD_REQUEST;
-            ctx.body = { message: 'The specified name already exists' };
+            ctx.state.message = 'The specified name already exists';
         } else {
             // save the group contained in the POST body
             const group = await groupRepository.save(groupToBeSaved);
@@ -100,7 +100,7 @@ export default class UserController {
         const groupToBeUpdated: Group = new Group();
         groupToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
         groupToBeUpdated.name = ctx.request.body.name;
-        groupToBeUpdated.profilePhoto = ctx.request.body.profilePhoto;
+        groupToBeUpdated.displayPhoto = ctx.request.body.displayPhoto;
 
         // validate group entity
         const errors: ValidationError[] = await validate(groupToBeUpdated); // errors is an array of validation errors
@@ -126,7 +126,7 @@ export default class UserController {
             const group = await groupRepository.save(groupToBeUpdated);
             // return CREATED status code and updated group
             ctx.status = httpStatus.CREATED;
-            ctx.body.data = group;
+            ctx.state.data = group;
             await next();
         }
 

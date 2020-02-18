@@ -14,8 +14,12 @@ export class Interest {
     public name: string;
 
     @Column({
-        default: false,
+        default: true,
         nullable: false,
     })
     public isActive: boolean;
 }
+
+export const interestSchema = {
+    name: { type: 'string', required: true, example: 'CS 321', description: 'Group name' },
+};

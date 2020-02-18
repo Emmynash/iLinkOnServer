@@ -1,6 +1,7 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
-import { Length, IsEmail, IsPhoneNumber } from 'class-validator';
-import { Interest } from './Interest';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Length, IsEmail, IsPhoneNumber, IsOptional } from 'class-validator';
+import crypto from 'crypto';
+import { config } from '@config';
 import { GroupMember } from './GroupMember';
 
 @Entity()
@@ -10,6 +11,7 @@ export class User {
 
     @Column()
     @Length(10, 800)
+    @IsOptional()
     profilePhoto?: string;
 
     @Column({
@@ -29,13 +31,15 @@ export class User {
         length: 80,
     })
     @Length(2, 80)
-    mName: string;
+    @IsOptional()
+    mName?: string;
 
     @Column({
         length: 100,
     })
     @Length(8, 100)
     @IsEmail()
+    @IsOptional()
     email?: string;
 
     @Column({
@@ -56,12 +60,39 @@ export class User {
 
     @UpdateDateColumn()
     public updatedAt: Date;
+
+
+    @BeforeInsert()
+    @BeforeUpdate()
+    public preSave(size: number = 200) {
+        if (!this.profilePhoto) {
+            if (!this.phone) {
+                this.profilePhoto = `https://gravatar.com/avatar/?s=${size}&d=retro`;
+            }
+
+            const md5 = crypto.createHash('md5').update(this.phone).digest('hex');
+            this.profilePhoto = `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
+        }
+        if (!this.email) {
+            this.email = `user-${this.id}@${config.presentationalDomain}`;
+        }
+    }
 }
 
 export const userSchema = {
-    id: { type: 'number', required: true, example: 1 },
     fName: { type: 'string', required: true, example: 'Kator' },
     mName: { type: 'string', required: false, example: 'Bryan' },
     lName: { type: 'string', required: true, example: 'James' },
     email: { type: 'string', required: false, example: 'kator95@gmail.com' },
+    interests: {
+        type: 'array',
+        required: false,
+        items: { type: 'number', example: 1 },
+    },
+    school: {
+        type: 'number',
+        required: false,
+        example:  1,
+        description: 'School ID'
+    },
 };

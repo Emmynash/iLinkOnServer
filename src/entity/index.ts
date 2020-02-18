@@ -3,3 +3,4 @@ export * from './Group';
 export * from './GroupMember';
 export * from './OneTimePassword';
 export * from './User';
+export * from './School';

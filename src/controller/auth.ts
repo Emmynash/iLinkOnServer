@@ -5,9 +5,8 @@ import { request, summary, body, responsesAll, tagsAll, responses } from 'koa-sw
 import HttpStatus from 'http-status';
 import { sign } from 'jsonwebtoken';
 import { User, userSchema, otpSchema, OneTimePassword } from '@entities';
-import { generateOTP, sendSMS } from '@shared';
+import { generateOTP, sendSMS, SampleResponses } from '@shared';
 import { config } from '@config';
-import { GenerateOTPSampleResponses, VerifyOTPSampleResponses, CreateUserSampleResponse } from './_common';
 
 @tagsAll(['Auth'])
 export default class AuthController {
@@ -17,7 +16,7 @@ export default class AuthController {
     @body({
         phone: { type: 'string', required: true, example: '+2348181484568', description: 'Phone number requesting OTP' },
     })
-    @responses(GenerateOTPSampleResponses)
+    @responses(SampleResponses.GenerateOTP)
     public static async generateOTP(ctx: BaseContext, next: () => void) {
 
         // get a OTP repository to perform operations with user
@@ -53,7 +52,7 @@ export default class AuthController {
     @request('post', '/auth/verify-otp')
     @summary('Verify OTP for signup or login')
     @body(otpSchema)
-    @responses(VerifyOTPSampleResponses)
+    @responses(SampleResponses.VerifyOTP)
     public static async verifyOTP(ctx: BaseContext, next: () => void) {
 
         // get a OTP repository to perform operations with user
@@ -88,7 +87,7 @@ export default class AuthController {
     @request('post', '/auth/register')
     @summary('Register new user')
     @body(userSchema)
-    @responses(CreateUserSampleResponse)
+    @responses(SampleResponses.CreateUser)
     public static async createUser(ctx: BaseContext, next: () => void) {
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);
@@ -100,6 +99,7 @@ export default class AuthController {
         userToBeSaved.lName = ctx.request.body.lName;
         userToBeSaved.phone = ctx.state.temp.phone;
         userToBeSaved.email = ctx.request.body.email;
+        userToBeSaved.interests = ctx.request.body.interests || [];
 
         // validate user entity
         const errors: ValidationError[] = await validate(userToBeSaved); // errors is an array of validation errors

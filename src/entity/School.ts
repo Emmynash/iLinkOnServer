@@ -1,9 +1,8 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Length, IsOptional } from 'class-validator';
-import { GroupMember } from './GroupMember';
 
 @Entity()
-export class Group {
+export class School {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -21,9 +20,6 @@ export class Group {
     @Column({ type: 'numeric', array: true, default: '{}' })
     public interests: number[];
 
-    @OneToMany(type => GroupMember, groupMember => groupMember.group)
-    public groupMembers: GroupMember[];
-
     @CreateDateColumn()
     public createdAt: Date;
 
@@ -39,7 +35,7 @@ export class Group {
     }
 }
 
-export const groupSchema = {
-    displayPhoto: { type: 'string', required: false, example: 'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro', description: 'Group display photo' },
+export const schoolSchema = {
+    displayPhoto: { type: 'string', required: false, example: 'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro', description: 'School display photo' },
     name: { type: 'string', required: true, example: 'CS 321', description: 'Group name' },
 };
