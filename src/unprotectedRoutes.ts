@@ -7,7 +7,7 @@ unprotectedRouter.post('/auth/generate-otp', controller.auth.generateOTP);
 unprotectedRouter.post('/auth/verify-otp', controller.auth.verifyOTP);
 
 // Interests
-unprotectedRouter.get('/interests/', controller.interest.getInterests);
+unprotectedRouter.get('/interests', controller.interest.getInterests);
 
 // Hello World route
 unprotectedRouter.get('/health-check', controller.general.healthCheck);

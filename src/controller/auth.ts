@@ -37,6 +37,7 @@ export default class AuthController {
             // return BAD REQUEST status code and errors array
             ctx.status = HttpStatus.BAD_REQUEST;
             ctx.state.message = errors;
+            await next();
         } else {
             // send sms
             await sendSMS(ctx.request.body.phone, `${oneTimePassword.otp}`);
@@ -45,8 +46,8 @@ export default class AuthController {
             // return CREATED status code and updated OTP
             ctx.status = HttpStatus.OK;
             ctx.state.data = otp;
+            await next();
         }
-        await next();
     }
 
     @request('post', '/auth/verify-otp')
@@ -63,6 +64,7 @@ export default class AuthController {
             // return BAD REQUEST status code as OTP was not found
             ctx.status = HttpStatus.BAD_REQUEST;
             ctx.state.message = 'Invalid OTP';
+            await next();
         } else {
             const response = {};
             const userRepository: Repository<User> = getManager().getRepository(User);
@@ -80,8 +82,8 @@ export default class AuthController {
             // return OK status code and updated OTP
             ctx.status = HttpStatus.OK;
             ctx.state.data = response;
+            await next();
         }
-        await next();
     }
 
     @request('post', '/auth/register')
@@ -118,7 +120,7 @@ export default class AuthController {
                 await next();
             } else {
                 // save the user contained in the POST body
-                const user = await userRepository.create(userToBeSaved);
+                const user = await userRepository.save(userToBeSaved);
                 // return CREATED status code and updated user
                 ctx.status = HttpStatus.CREATED;
                 ctx.state.data = {
