@@ -16,7 +16,7 @@ export class GroupMember {
     id: number;
 
     @Column()
-    public userId: number;
+    public memberId: number;
 
     @Column()
     public groupId: number;
