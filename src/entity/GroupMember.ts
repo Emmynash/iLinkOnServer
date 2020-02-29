@@ -21,6 +21,9 @@ export class GroupMember {
     @Column()
     public groupId: number;
 
+    @Column({ default: false })
+    public approved: boolean;
+
     @Column({ type: 'enum', enum: UserRole, default: UserRole.MEMBER })
     public role: UserRole;
 

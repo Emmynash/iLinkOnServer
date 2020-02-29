@@ -19,6 +19,7 @@ protectedRouter.get('/groups/:id', auth(), controller.group.getGroup);
 protectedRouter.post('/groups', auth(), controller.group.createGroup);
 protectedRouter.put('/groups/:id', auth(), controller.group.updateGroup);
 protectedRouter.delete('/groups/:id', auth(), controller.group.deleteGroup);
+protectedRouter.post('/groups/:id/join', auth(), controller.group.joinGroup);
 
 // School routes
 protectedRouter.get('/schools', auth(), controller.school.getSchools);
