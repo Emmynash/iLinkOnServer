@@ -15,25 +15,25 @@ protectedRouter.delete('/users/:id', auth(), controller.user.deleteUser);
 
 // Group routes
 protectedRouter.get('/groups', auth(), controller.group.getGroups);
-protectedRouter.get('/groups/:id', auth(), controller.group.getGroup);
+protectedRouter.get('/groups/:groupId', auth(), controller.group.getGroup);
 protectedRouter.post('/groups', auth(), controller.group.createGroup);
-protectedRouter.put('/groups/:id', auth(), controller.group.updateGroup);
-protectedRouter.delete('/groups/:id', auth(), controller.group.deleteGroup);
-protectedRouter.post('/groups/:id/join', auth(), controller.group.joinGroup);
-protectedRouter.post('/groups/:id/leave', auth(), controller.group.exitGroup);
+protectedRouter.put('/groups/:groupId', auth(), controller.group.updateGroup);
+protectedRouter.delete('/groups/:groupId', auth(), controller.group.deleteGroup);
+protectedRouter.post('/groups/:groupId/join', auth(), controller.group.joinGroup);
+protectedRouter.post('/groups/:groupId/leave', auth(), controller.group.exitGroup);
 protectedRouter.get('/groups/:groupId/events', auth(), controller.group.getEvents);
 protectedRouter.post('/groups/:groupId/events', auth(), controller.group.createEvent);
 
 // School routes
 protectedRouter.get('/schools', auth(), controller.school.getSchools);
-protectedRouter.get('/schools/:id', auth(), controller.school.getSchool);
+protectedRouter.get('/schools/:schoolId', auth(), controller.school.getSchool);
 protectedRouter.post('/schools', auth(), controller.school.createSchool);
-protectedRouter.put('/schools/:id', auth(), controller.school.updateSchool);
-protectedRouter.delete('/schools/:id', auth(), controller.school.deleteSchool);
+protectedRouter.put('/schools/:schoolId', auth(), controller.school.updateSchool);
+protectedRouter.delete('/schools/:schoolId', auth(), controller.school.deleteSchool);
 
 // Interest routes
 protectedRouter.post('/interests', auth(), controller.interest.createInterest);
-protectedRouter.delete('/interests/:id', auth(), controller.interest.deleteInterest);
+protectedRouter.delete('/interests/:interestId', auth(), controller.interest.deleteInterest);
 
 // Swagger endpoint
 protectedRouter.swagger({

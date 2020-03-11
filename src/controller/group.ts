@@ -3,7 +3,7 @@ import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
 import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event } from '@entities';
-import httpStatus = require('http-status');
+import httpStatus from 'http-status';
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Group'])
@@ -17,7 +17,7 @@ export default class GroupController {
         const groupRepository: Repository<Group> = getManager().getRepository(Group);
 
         // load all groups
-        const groups: Group[] = await groupRepository.find();
+        const groups: Group[] = await groupRepository.find({ deleted: false });
 
         // return OK status code and loaded groups array
         ctx.status = httpStatus.OK;
@@ -25,10 +25,10 @@ export default class GroupController {
         await next();
     }
 
-    @request('get', '/groups/{id}')
+    @request('get', '/groups/{groupId}')
     @summary('Find group by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'id of group' }
     })
     public static async getGroup(ctx: BaseContext, next: () => void) {
 
@@ -36,7 +36,7 @@ export default class GroupController {
         const groupRepository: Repository<Group> = getManager().getRepository(Group);
 
         // load group by id
-        const group: Group = await groupRepository.findOne(+ctx.params.id || 0);
+        const group: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
 
         if (group) {
             // return OK status code and loaded group object
@@ -97,10 +97,10 @@ export default class GroupController {
         }
     }
 
-    @request('put', '/groups/{id}')
+    @request('put', '/groups/{groupId}')
     @summary('Update a group')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'id of group' }
     })
     @body(groupSchema)
     public static async updateGroup(ctx: BaseContext, next: () => void) {
@@ -111,7 +111,7 @@ export default class GroupController {
         // update the group by specified id
         // build up entity group to be updated
         const groupToBeUpdated: Group = new Group();
-        groupToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
+        groupToBeUpdated.id = +ctx.params.groupId || 0; // will always have a number, this will avoid errors
         groupToBeUpdated.name = ctx.request.body.name;
         groupToBeUpdated.displayPhoto = ctx.request.body.displayPhoto;
 
@@ -145,10 +145,10 @@ export default class GroupController {
 
     }
 
-    @request('delete', '/groups/{id}')
+    @request('delete', '/groups/{groupId}')
     @summary('Delete group by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'id of group' }
     })
     public static async deleteGroup(ctx: BaseContext, next: () => void) {
 
@@ -156,7 +156,7 @@ export default class GroupController {
         const groupRepository = getManager().getRepository(Group);
 
         // find the group by specified id
-        const groupToRemove: Group = await groupRepository.findOne(+ctx.params.id || 0);
+        const groupToRemove: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!groupToRemove) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
@@ -180,10 +180,10 @@ export default class GroupController {
 
     }
 
-    @request('post', '/groups/{id}/join')
+    @request('post', '/groups/{groupId}/join')
     @summary('Join a group')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'id of group' }
     })
     public static async joinGroup(ctx: BaseContext, next: () => void) {
 
@@ -192,7 +192,7 @@ export default class GroupController {
         const groupMemberRepository = getManager().getRepository(GroupMember);
 
         // find the group by specified id
-        const groupToJoin: Group = await groupRepository.findOne(+ctx.params.id || 0);
+        const groupToJoin: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!groupToJoin) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
@@ -219,10 +219,10 @@ export default class GroupController {
         }
     }
 
-    @request('post', '/groups/{id}/leave')
+    @request('post', '/groups/{groupId}/leave')
     @summary('Leave a group')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'id of group' }
     })
     public static async exitGroup(ctx: BaseContext, next: () => void) {
 
@@ -231,7 +231,7 @@ export default class GroupController {
         const groupMemberRepository = getManager().getRepository(GroupMember);
 
         // find the group by specified id
-        const groupToExit: Group = await groupRepository.findOne(+ctx.params.id || 0);
+        const groupToExit: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!groupToExit) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;

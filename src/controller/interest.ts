@@ -58,10 +58,10 @@ export default class UserController {
         }
     }
 
-    @request('delete', '/interests/{id}')
+    @request('delete', '/interests/{interestId}')
     @summary('Delete an interest by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of interest' }
+        interestId: { type: 'number', required: true, description: 'id of interest' }
     })
     public static async deleteInterest(ctx: BaseContext, next: () => void) {
 
@@ -69,7 +69,7 @@ export default class UserController {
         const interestRepository = getManager().getRepository(Interest);
 
         // find the user by specified id
-        const schoolToRemove: Interest = await interestRepository.findOne(+ctx.params.id || 0);
+        const schoolToRemove: Interest = await interestRepository.findOne(+ctx.params.interestId || 0);
         if (!schoolToRemove) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;

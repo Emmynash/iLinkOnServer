@@ -25,10 +25,10 @@ export default class UserController {
         await next();
     }
 
-    @request('get', '/schools/{id}')
+    @request('get', '/schools/{schoolId}')
     @summary('Find school by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of school' }
+        schoolId: { type: 'number', required: true, description: 'id of school' }
     })
     public static async getSchool(ctx: BaseContext, next: () => void) {
 
@@ -36,7 +36,7 @@ export default class UserController {
         const schoolRepository: Repository<School> = getManager().getRepository(School);
 
         // load school by id
-        const school: School = await schoolRepository.findOne(+ctx.params.id || 0);
+        const school: School = await schoolRepository.findOne(+ctx.params.schoolId || 0);
 
         if (school) {
             // return OK status code and loaded school object
@@ -85,10 +85,10 @@ export default class UserController {
         }
     }
 
-    @request('put', '/schools/{id}')
+    @request('put', '/schools/{schoolId}')
     @summary('Update a school')
     @path({
-        id: { type: 'number', required: true, description: 'id of school' }
+        schoolId: { type: 'number', required: true, description: 'id of school' }
     })
     @body(schoolSchema)
     public static async updateSchool(ctx: BaseContext, next: () => void) {
@@ -99,7 +99,7 @@ export default class UserController {
         // update the school by specified id
         // build up entity school to be updated
         const schoolToBeUpdated: School = new School();
-        schoolToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
+        schoolToBeUpdated.id = +ctx.params.schoolId || 0; // will always have a number, this will avoid errors
         schoolToBeUpdated.name = ctx.request.body.name;
         schoolToBeUpdated.displayPhoto = ctx.request.body.displayPhoto;
 
