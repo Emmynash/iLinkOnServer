@@ -11,7 +11,7 @@ export default class GroupController {
 
     @request('get', '/groups')
     @summary('Find all groups')
-    public static async getGroups(ctx: BaseContext) {
+    public static async getGroups(ctx: BaseContext, next: () => void) {
 
         // get a group repository to perform operations with group
         const groupRepository: Repository<Group> = getManager().getRepository(Group);
@@ -22,6 +22,7 @@ export default class GroupController {
         // return OK status code and loaded groups array
         ctx.status = httpStatus.OK;
         ctx.state.data = groups;
+        await next();
     }
 
     @request('get', '/groups/{id}')

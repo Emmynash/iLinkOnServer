@@ -10,7 +10,7 @@ export default class UserController {
 
     @request('get', '/users')
     @summary('Find all users')
-    public static async getUsers(ctx: BaseContext) {
+    public static async getUsers(ctx: BaseContext, next: () => void) {
 
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);
@@ -20,7 +20,8 @@ export default class UserController {
 
         // return OK status code and loaded users array
         ctx.status = 200;
-        ctx.body = users;
+        ctx.state.data = users;
+        await next();
     }
 
     @request('get', '/users/{id}')

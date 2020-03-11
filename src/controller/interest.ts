@@ -11,7 +11,7 @@ export default class UserController {
 
     @request('get', '/interests')
     @summary('Find all interests')
-    public static async getInterests(ctx: BaseContext) {
+    public static async getInterests(ctx: BaseContext, next: () => void) {
 
         // get a interest repository to perform operations with interest
         const interestRepository: Repository<Interest> = getManager().getRepository(Interest);
@@ -22,6 +22,7 @@ export default class UserController {
         // return OK status code and loaded interests array
         ctx.status = httpStatus.OK;
         ctx.state.data = interests;
+        await next();
     }
 
     @request('post', '/interests')

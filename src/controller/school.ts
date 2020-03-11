@@ -11,7 +11,7 @@ export default class UserController {
 
     @request('get', '/schools')
     @summary('Find all schools')
-    public static async getSchools(ctx: BaseContext) {
+    public static async getSchools(ctx: BaseContext, next: () => void) {
 
         // get a school repository to perform operations with school
         const schoolRepository: Repository<School> = getManager().getRepository(School);
@@ -22,6 +22,7 @@ export default class UserController {
         // return OK status code and loaded schools array
         ctx.status = httpStatus.OK;
         ctx.state.data = schools;
+        await next();
     }
 
     @request('get', '/schools/{id}')
