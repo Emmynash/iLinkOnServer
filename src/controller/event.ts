@@ -60,11 +60,10 @@ export default class UserController {
             ctx.state.data = rsvp;
             await next();
         }
-
     }
 
     @request('get', '/events/{eventId}/rsvp')
-    @summary('RSVP an event')
+    @summary('Get event RSVPs')
     @path({
         eventId: { type: 'number', required: true, description: 'Event ID' }
     })

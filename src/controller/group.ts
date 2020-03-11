@@ -237,25 +237,18 @@ export default class GroupController {
         if (!groupToExit) {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
-        } else if (!groupToExit.isPublic) {
-            // This is not a public group. A request may have to be sent to the admin
-            // After which the flag `approved` will have to be set on GroupMember
-            ctx.status = 403;
-            ctx.state.message = 'A user can only be deleted by himself';
+            ctx.state.message = 'The group you are trying to leave doesn\'t exist';
             await next();
         } else {
             // Create a groupMember
-            const groupMember = await groupMemberRepository.delete({ group: groupToExit, member: ctx.state.user });
+            await groupMemberRepository.delete({ group: groupToExit, member: ctx.state.user });
 
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = groupToExit;
+            ctx.status = httpStatus.OK;
             await next();
         }
     }
 
-    @request('post', '/groups/{groupId}/members')
+    @request('get', '/groups/{groupId}/members')
     @summary('Get group members')
     @path({
         groupId: { type: 'number', required: true, description: 'id of group' }
@@ -277,7 +270,7 @@ export default class GroupController {
             // Create a groupMember
             const groupMembers = await groupMemberRepository.find({ group });
 
-            ctx.status = httpStatus.CREATED;
+            ctx.status = httpStatus.OK;
             ctx.state.data = groupMembers;
             await next();
         }
@@ -328,7 +321,7 @@ export default class GroupController {
             event.createdBy = ctx.state.user;
             await eventRepository.save(event);
 
-            ctx.status = httpStatus.CREATED;
+            ctx.status = httpStatus.OK;
             ctx.state.data = event;
             await next();
         }
@@ -355,7 +348,7 @@ export default class GroupController {
         } else {
             // Create an event
             const events = await eventRepository.find({ group });
-            ctx.status = httpStatus.CREATED;
+            ctx.status = httpStatus.OK;
             ctx.state.data = events;
             await next();
         }

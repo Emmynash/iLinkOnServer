@@ -19,6 +19,7 @@ protectedRouter.get('/groups/:groupId', auth(), controller.group.getGroup);
 protectedRouter.post('/groups', auth(), controller.group.createGroup);
 protectedRouter.put('/groups/:groupId', auth(), controller.group.updateGroup);
 protectedRouter.delete('/groups/:groupId', auth(), controller.group.deleteGroup);
+protectedRouter.post('/groups/:groupId/members', auth(), controller.group.getMembers);
 protectedRouter.post('/groups/:groupId/join', auth(), controller.group.joinGroup);
 protectedRouter.post('/groups/:groupId/leave', auth(), controller.group.exitGroup);
 protectedRouter.get('/groups/:groupId/events', auth(), controller.group.getEvents);
