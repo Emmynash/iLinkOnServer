@@ -2,14 +2,14 @@ import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
-import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event } from '@entities';
+import { eventSchema, Event, Group, GroupMember, UserRole } from '@entities';
 import httpStatus = require('http-status');
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Group'])
-export default class GroupController {
+export default class UserController {
 
-    @request('get', '/groups')
+    @request('get', '/events')
     @summary('Find all groups')
     public static async getGroups(ctx: BaseContext) {
 
@@ -160,7 +160,6 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
             ctx.state.message = 'The group you are trying to delete doesn\'t exist in the db';
-            await next();
         } else if (ctx.state.user.name !== groupToRemove.name) {
             // TODO Check if group is admin
             // check group's token id and group id are the same
@@ -196,7 +195,6 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
             ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
         } else if (!groupToJoin.isPublic) {
             // This is not a public group. A request may have to be sent to the admin
             // After which the flag `approved` will have to be set on GroupMember
@@ -216,101 +214,6 @@ export default class GroupController {
             ctx.state.data = groupToJoin;
             await next();
         }
-    }
 
-    @request('post', '/groups/{id}/leave')
-    @summary('Leave a group')
-    @path({
-        id: { type: 'number', required: true, description: 'id of group' }
-    })
-    public static async exitGroup(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository = getManager().getRepository(Group);
-        const groupMemberRepository = getManager().getRepository(GroupMember);
-
-        // find the group by specified id
-        const groupToExit: Group = await groupRepository.findOne(+ctx.params.id || 0);
-        if (!groupToExit) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
-        } else if (!groupToExit.isPublic) {
-            // This is not a public group. A request may have to be sent to the admin
-            // After which the flag `approved` will have to be set on GroupMember
-            ctx.status = 403;
-            ctx.state.message = 'A user can only be deleted by himself';
-            await next();
-        } else {
-            // Create a groupMember
-            const groupMember = await groupMemberRepository.delete({ group: groupToExit, member: ctx.state.user });
-
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = groupToExit;
-            await next();
-        }
-    }
-
-    @request('post', '/groups/{groupId}/events')
-    @summary('Create a group event')
-    @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
-    })
-    @body(eventSchema)
-    public static async createEvent(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository = getManager().getRepository(Group);
-        const eventRepository = getManager().getRepository(Event);
-        const groupMemberRepository = getManager().getRepository(GroupMember);
-
-        // find the group by specified id
-        const group: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
-        if (!group) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.state.message = 'The group you are trying to create an event for doesn\'t exist';
-            await next();
-        } else {
-            // Create an event
-            const event = new Event();
-            event.name = ctx.request.body.name;
-            event.group = group;
-            event.description = ctx.request.body.description;
-            event.createdBy = ctx.state.user;
-            await eventRepository.save(event);
-
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = event;
-            await next();
-        }
-    }
-
-    @request('get', '/groups/{groupId}/events')
-    @summary('Get a group\'s events')
-    @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
-    })
-    public static async getEvents(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository = getManager().getRepository(Group);
-        const eventRepository = getManager().getRepository(Event);
-
-        // find the group by specified id
-        const group: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
-        if (!group) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.state.message = 'The group doesn\'t exist';
-            await next();
-        } else {
-            // Create an event
-            const events = await eventRepository.find({ group });
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = events;
-            await next();
-        }
     }
 }
