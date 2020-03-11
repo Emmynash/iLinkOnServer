@@ -52,7 +52,7 @@ export default class UserController {
 
     @request('post', '/groups')
     @summary('Create a group')
-    @body(groupSchema)
+    @body(eventSchema)
     public static async createGroup(ctx: BaseContext, next: () => void) {
 
         // get a group repository to perform operations with group
@@ -101,7 +101,7 @@ export default class UserController {
     @path({
         id: { type: 'number', required: true, description: 'id of group' }
     })
-    @body(groupSchema)
+    @body(eventSchema)
     public static async updateGroup(ctx: BaseContext, next: () => void) {
 
         // get a group repository to perform operations with group
