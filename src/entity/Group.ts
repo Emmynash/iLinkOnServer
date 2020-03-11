@@ -1,6 +1,7 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate, JoinTable } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
 import { GroupMember } from './GroupMember';
+import { Event } from './Event';
 
 @Entity()
 export class Group {
@@ -30,7 +31,10 @@ export class Group {
 
     @OneToMany(type => GroupMember, groupMember => groupMember.group)
     @JoinTable()
-    public groupMembers: GroupMember[];
+    public members: GroupMember[];
+
+    @OneToMany(type => Event, event => event.group)
+    public events: Event[];
 
     @Column({ default: false })
     public deleted: boolean;

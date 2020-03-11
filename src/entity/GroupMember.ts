@@ -30,7 +30,7 @@ export class GroupMember {
     @ManyToOne(type => User, user => user.groupMembers)
     public member: User;
 
-    @ManyToOne(type => Group, group => group.groupMembers)
+    @ManyToOne(type => Group, group => group.members)
     public group: Group;
 
     @CreateDateColumn()

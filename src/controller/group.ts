@@ -2,7 +2,7 @@ import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
-import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event } from '@entities';
+import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event, EventDate } from '@entities';
 import httpStatus from 'http-status';
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
@@ -74,10 +74,12 @@ export default class GroupController {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = errors;
+            await next();
         } else if (await groupRepository.findOne({ name: groupToBeSaved.name })) {
             // return BAD REQUEST status code and name already exists error
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'A group already exists with the specified name';
+            await next();
         } else {
             // save the group contained in the POST body
             const group = await groupRepository.save(groupToBeSaved);
@@ -126,13 +128,13 @@ export default class GroupController {
         } else if (!await groupRepository.findOne(groupToBeUpdated.id)) {
             // check if a group with the specified id exists
             // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.BAD_REQUEST;
+            ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to update doesn\'t exist in the db';
             await next();
         } else if (await groupRepository.findOne({ id: Not(Equal(groupToBeUpdated.id)), name: groupToBeUpdated.name })) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = 'The specified e-mail address already exists';
+            ctx.state.message = 'The specified group name already exists';
             await next();
         } else {
             // save the group contained in the PUT body
@@ -234,7 +236,7 @@ export default class GroupController {
         const groupToExit: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!groupToExit) {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to join doesn\'t exist';
             await next();
         } else if (!groupToExit.isPublic) {
@@ -253,6 +255,34 @@ export default class GroupController {
         }
     }
 
+    @request('post', '/groups/{groupId}/members')
+    @summary('Get group members')
+    @path({
+        groupId: { type: 'number', required: true, description: 'id of group' }
+    })
+    public static async getMembers(ctx: BaseContext, next: () => void) {
+
+        // get a group repository to perform operations with group
+        const groupRepository = getManager().getRepository(Group);
+        const groupMemberRepository = getManager().getRepository(GroupMember);
+
+        // find the group by specified id
+        const group: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
+        if (!group) {
+            // return a BAD REQUEST status code and error message
+            ctx.status = httpStatus.NOT_FOUND;
+            ctx.state.message = 'The group you are trying to join doesn\'t exist';
+            await next();
+        } else {
+            // Create a groupMember
+            const groupMembers = await groupMemberRepository.find({ group });
+
+            ctx.status = httpStatus.CREATED;
+            ctx.state.data = groupMembers;
+            await next();
+        }
+    }
+
     @request('post', '/groups/{groupId}/events')
     @summary('Create a group event')
     @path({
@@ -260,10 +290,10 @@ export default class GroupController {
     })
     @body(eventSchema)
     public static async createEvent(ctx: BaseContext, next: () => void) {
-
         // get a group repository to perform operations with group
         const groupRepository = getManager().getRepository(Group);
         const eventRepository = getManager().getRepository(Event);
+        const eventDateRepository = getManager().getRepository(EventDate);
         const groupMemberRepository = getManager().getRepository(GroupMember);
 
         // find the group by specified id
@@ -273,12 +303,28 @@ export default class GroupController {
             ctx.status = 400;
             ctx.state.message = 'The group you are trying to create an event for doesn\'t exist';
             await next();
+        } else if (!await groupMemberRepository.findOne({ group, member: ctx.state.user, role: UserRole.ADMIN })) {
+            ctx.status = httpStatus.BAD_REQUEST;
+            ctx.state.message = 'Only a group admin can create and event for a group';
+            await next();
         } else {
+            // Create event dates
+            const eventDates = ctx.request.body.dates.mao(async (date) => {
+                let eventDate = new EventDate();
+                eventDate.startDate = new Date(date.startDate);
+                eventDate.endDate = new Date(date.endDate || date.startDate);
+                eventDate = await eventDateRepository.save(eventDate);
+                return eventDate;
+            });
+
             // Create an event
             const event = new Event();
+            event.displayPhoto = ctx.request.body.displayPhoto;
             event.name = ctx.request.body.name;
+            event.venue = ctx.request.body.venue;
             event.group = group;
             event.description = ctx.request.body.description;
+            event.dates = eventDates;
             event.createdBy = ctx.state.user;
             await eventRepository.save(event);
 

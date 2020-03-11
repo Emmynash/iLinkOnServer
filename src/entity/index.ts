@@ -1,5 +1,6 @@
 export * from './Event';
 export * from './EventDate';
+export * from './EventRSVP';
 export * from './Interest';
 export * from './Group';
 export * from './GroupMember';

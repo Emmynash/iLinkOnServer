@@ -1,217 +1,92 @@
 import { BaseContext } from 'koa';
-import { getManager, Repository, Not, Equal, Like } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
-import { eventSchema, Event, Group, GroupMember, UserRole } from '@entities';
+import { Event, EventRSVP } from '@entities';
 import httpStatus = require('http-status');
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
-@tagsAll(['Group'])
+@tagsAll(['Event'])
 export default class UserController {
 
     @request('get', '/events')
-    @summary('Find all groups')
-    public static async getGroups(ctx: BaseContext) {
+    @summary('Find all events')
+    public static async getEvents(ctx: BaseContext, next: () => void) {
 
-        // get a group repository to perform operations with group
-        const groupRepository: Repository<Group> = getManager().getRepository(Group);
+        // get a event repository to perform operations with event
+        const eventRepository: Repository<Event> = getManager().getRepository(Event);
 
-        // load all groups
-        const groups: Group[] = await groupRepository.find();
+        // load all events
+        const events: Event[] = await eventRepository.find();
 
-        // return OK status code and loaded groups array
+        // return OK status code and loaded events array
         ctx.status = httpStatus.OK;
-        ctx.state.data = groups;
+        ctx.state.data = events;
+        await next();
     }
 
-    @request('get', '/groups/{id}')
-    @summary('Find group by id')
+    @request('post', '/events/{eventId}/rsvp')
+    @summary('RSVP an event')
     @path({
-        id: { type: 'number', required: true, description: 'id of group' }
+        eventId: { type: 'number', required: true, description: 'Event ID' }
     })
-    public static async getGroup(ctx: BaseContext, next: () => void) {
+    public static async rsvpEvent(ctx: BaseContext, next: () => void) {
 
-        // get a group repository to perform operations with group
-        const groupRepository: Repository<Group> = getManager().getRepository(Group);
-
-        // load group by id
-        const group: Group = await groupRepository.findOne(+ctx.params.id || 0);
-
-        if (group) {
-            // return OK status code and loaded group object
-            ctx.status = httpStatus.OK;
-            ctx.state.data = group;
-            await next();
-        } else {
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = 'The group you are trying to retrieve doesn\'t exist in the db';
-            await next();
-        }
-    }
-
-    @request('post', '/groups')
-    @summary('Create a group')
-    @body(eventSchema)
-    public static async createGroup(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository: Repository<Group> = getManager().getRepository(Group);
-        const groupMemberRepository: Repository<GroupMember> = getManager().getRepository(GroupMember);
-
-        // build up entity group to be saved
-        const groupToBeSaved: Group = new Group();
-        groupToBeSaved.name = ctx.request.body.name;
-        groupToBeSaved.description = ctx.request.body.description;
-        groupToBeSaved.interests = ctx.request.body.interests ? ctx.request.body.interests : undefined;
-        groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto ? ctx.request.body.displayPhoto : undefined;
-
-        // validate group entity
-        const errors: ValidationError[] = await validate(groupToBeSaved); // errors is an array of validation errors
-
-        if (errors.length > 0) {
-            // return BAD REQUEST status code and errors array
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = errors;
-        } else if (await groupRepository.findOne({ name: groupToBeSaved.name })) {
-            // return BAD REQUEST status code and name already exists error
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = 'A group already exists with the specified name';
-        } else {
-            // save the group contained in the POST body
-            const group = await groupRepository.save(groupToBeSaved);
-
-            // Create user group pivot entry
-            const groupMember = new GroupMember();
-            groupMember.member = ctx.state.user;
-            groupMember.group = group;
-            groupMember.role = UserRole.ADMIN;
-            groupMember.approved = true;
-            await groupMemberRepository.save(groupMember);
-
-            // return CREATED status code and updated group
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = group;
-            await next();
-        }
-    }
-
-    @request('put', '/groups/{id}')
-    @summary('Update a group')
-    @path({
-        id: { type: 'number', required: true, description: 'id of group' }
-    })
-    @body(eventSchema)
-    public static async updateGroup(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository: Repository<Group> = getManager().getRepository(Group);
-
-        // update the group by specified id
-        // build up entity group to be updated
-        const groupToBeUpdated: Group = new Group();
-        groupToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
-        groupToBeUpdated.name = ctx.request.body.name;
-        groupToBeUpdated.displayPhoto = ctx.request.body.displayPhoto;
-
-        // validate group entity
-        const errors: ValidationError[] = await validate(groupToBeUpdated); // errors is an array of validation errors
-
-        if (errors.length > 0) {
-            // return BAD REQUEST status code and errors array
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = errors;
-            await next();
-        } else if (!await groupRepository.findOne(groupToBeUpdated.id)) {
-            // check if a group with the specified id exists
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = 'The group you are trying to update doesn\'t exist in the db';
-            await next();
-        } else if (await groupRepository.findOne({ id: Not(Equal(groupToBeUpdated.id)), name: groupToBeUpdated.name })) {
-            // return BAD REQUEST status code and email already exists error
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = 'The specified e-mail address already exists';
-            await next();
-        } else {
-            // save the group contained in the PUT body
-            const group = await groupRepository.save(groupToBeUpdated);
-            // return CREATED status code and updated group
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = group;
-            await next();
-        }
-
-    }
-
-    @request('delete', '/groups/{id}')
-    @summary('Delete group by id')
-    @path({
-        id: { type: 'number', required: true, description: 'id of group' }
-    })
-    public static async deleteGroup(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with user
-        const groupRepository = getManager().getRepository(Group);
+        // get a event repository to perform operations with event
+        const eventRepository = getManager().getRepository(Event);
+        const eventRSVPRepository = getManager().getRepository(EventRSVP);
 
         // find the group by specified id
-        const groupToRemove: Group = await groupRepository.findOne(+ctx.params.id || 0);
-        if (!groupToRemove) {
+        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
+        if (!event) {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.state.message = 'The group you are trying to delete doesn\'t exist in the db';
-        } else if (ctx.state.user.name !== groupToRemove.name) {
-            // TODO Check if group is admin
-            // check group's token id and group id are the same
-            // if not, return a FORBIDDEN status code and error message
-            ctx.status = 403;
-            ctx.state.message = 'A group can only be deleted by the creator';
-            await next();
-        } else {
-            // the group is there so can be removed
-            groupToRemove.deleted;
-            await groupRepository.save(groupToRemove);
-            // return a NO CONTENT status code
-            ctx.status = httpStatus.NO_CONTENT;
-            await next();
-        }
-
-    }
-
-    @request('post', '/groups/{id}/join')
-    @summary('Join a group')
-    @path({
-        id: { type: 'number', required: true, description: 'id of group' }
-    })
-    public static async joinGroup(ctx: BaseContext, next: () => void) {
-
-        // get a group repository to perform operations with group
-        const groupRepository = getManager().getRepository(Group);
-        const groupMemberRepository = getManager().getRepository(GroupMember);
-
-        // find the group by specified id
-        const groupToJoin: Group = await groupRepository.findOne(+ctx.params.id || 0);
-        if (!groupToJoin) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to join doesn\'t exist';
-        } else if (!groupToJoin.isPublic) {
+            await next();
+        } else if (!event.isPublic) {
             // This is not a public group. A request may have to be sent to the admin
-            // After which the flag `approved` will have to be set on GroupMember
-            ctx.status = 403;
-            ctx.state.message = 'A user can only be deleted by himself';
+            // After which the flag `approved` will have to be set on Event RSVP
+            ctx.status = httpStatus.FORBIDDEN;
+            ctx.state.message = 'You cannot RSVP for a private event without a join code';
             await next();
         } else {
-            // Create a groupMember
-            const groupMember = new GroupMember();
-            groupMember.member = ctx.state.user;
-            groupMember.group = groupToJoin;
-            groupMember.role = UserRole.MEMBER;
-            groupMember.approved = true;
-            await groupMemberRepository.save(groupMember);
+            // Create an RSVP
+            const rsvp = new EventRSVP();
+            rsvp.user = ctx.state.user;
+            rsvp.event = event;
+            await eventRSVPRepository.save(rsvp);
 
             ctx.status = httpStatus.CREATED;
-            ctx.state.data = groupToJoin;
+            ctx.state.data = rsvp;
+            await next();
+        }
+
+    }
+
+    @request('get', '/events/{eventId}/rsvp')
+    @summary('RSVP an event')
+    @path({
+        eventId: { type: 'number', required: true, description: 'Event ID' }
+    })
+    public static async getRsvps(ctx: BaseContext, next: () => void) {
+
+        // get a event repository to perform operations with event
+        const eventRepository = getManager().getRepository(Event);
+        const eventRSVPRepository = getManager().getRepository(EventRSVP);
+
+        // find the group by specified id
+        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
+        if (!event) {
+            // return a BAD REQUEST status code and error message
+            ctx.status = httpStatus.NOT_FOUND;
+            ctx.state.message = 'The group you are trying to join doesn\'t exist';
+            await next();
+        } else {
+            // Create an RSVP
+            const rsvps = await eventRSVPRepository.find({ event });
+
+            ctx.status = httpStatus.CREATED;
+            ctx.state.data = rsvps;
             await next();
         }
 

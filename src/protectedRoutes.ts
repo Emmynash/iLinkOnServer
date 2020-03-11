@@ -24,6 +24,11 @@ protectedRouter.post('/groups/:groupId/leave', auth(), controller.group.exitGrou
 protectedRouter.get('/groups/:groupId/events', auth(), controller.group.getEvents);
 protectedRouter.post('/groups/:groupId/events', auth(), controller.group.createEvent);
 
+// Events
+protectedRouter.get('/events', auth(), controller.event.getEvents);
+protectedRouter.post('/events/:eventId/rsvp', auth(), controller.event.rsvpEvent);
+protectedRouter.get('/events/:eventId/rsvp', auth(), controller.event.getRsvps);
+
 // School routes
 protectedRouter.get('/schools', auth(), controller.school.getSchools);
 protectedRouter.get('/schools/:schoolId', auth(), controller.school.getSchool);
