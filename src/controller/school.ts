@@ -133,10 +133,10 @@ export default class UserController {
 
     }
 
-    @request('delete', '/schools/{id}')
+    @request('delete', '/schools/{schoolId}')
     @summary('Delete school by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of school' }
+        id: { type: 'number', required: true, description: 'School ID' }
     })
     public static async deleteSchool(ctx: BaseContext, next: () => void) {
 
@@ -144,7 +144,7 @@ export default class UserController {
         const schoolRepository = getManager().getRepository(School);
 
         // find the user by specified id
-        const schoolToRemove: School = await schoolRepository.findOne(+ctx.params.id || 0);
+        const schoolToRemove: School = await schoolRepository.findOne(+ctx.params.schoolId || 0);
         if (!schoolToRemove) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
