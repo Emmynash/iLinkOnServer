@@ -1,12 +1,14 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
 import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event, EventDate } from '@entities';
 import httpStatus from 'http-status';
+import { authHandler } from '@middleware';
 
-@responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
+@responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request'}, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Group'])
+@middlewaresAll([authHandler()])
 export default class GroupController {
 
     @request('get', '/groups')

@@ -3,9 +3,9 @@ import HttpStatus from 'http-status';
 import { verify } from 'jsonwebtoken';
 import unless from 'koa-unless';
 import { User } from '@entities';
-import { config } from '../config';
+import { config } from '@config';
 
-export const auth = (isTemp = false) => {
+export const authHandler = (isTemp = false) => {
     const authMiddleware = async (ctx: BaseContext, next: () => void) => {
         const token: string | null = ctx.header.authorization || ctx.request.headers.token || ctx.request.query.token;
         if (!token) {

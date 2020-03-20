@@ -19,7 +19,7 @@ const AllRequests: ISampleResponses = {
         description: 'unauthorized, missing/wrong jwt token',
         example: {
             meta: {
-                status: 401,
+                status: HttpStatus.UNAUTHORIZED,
                 message: 'Invalid token',
                 error: 'Invalid token',
             },
@@ -29,11 +29,11 @@ const AllRequests: ISampleResponses = {
 };
 
 const GenerateOTP: ISampleResponses = {
-    [HttpStatus.OK]: {
+    [HttpStatus.CREATED]: {
         description: 'success',
         example: {
             meta: {
-                status: 200,
+                status: HttpStatus.CREATED,
                 message: 'success',
             },
             data: {
@@ -71,7 +71,7 @@ const VerifyOTP: ISampleResponses = {
         description: '',
         example: {
             meta: {
-                status: 200,
+                status: HttpStatus.OK,
                 message: 'success'
             },
             data: {
@@ -84,7 +84,7 @@ const VerifyOTP: ISampleResponses = {
         description: '',
         example: {
             meta: {
-                status: 400,
+                status: HttpStatus.BAD_REQUEST,
                 message: 'Invalid OTP',
             },
             data: {},
@@ -102,12 +102,12 @@ const CreateUser: ISampleResponses = {
             },
             data: {
                 user: {
+                    id: 1,
                     fName: 'Kator',
                     mName: 'Bryan',
                     lName: 'James',
                     phone: '+2348181484568',
                     email: 'kator95@gmail.com',
-                    id: 1,
                     createdAt: '2020-02-16T18:34:01.255Z',
                     updatedAt: '2020-02-16T18:34:01.255Z',
                 },

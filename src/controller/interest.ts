@@ -1,12 +1,14 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
 import { Interest, interestSchema } from '@entities';
 import httpStatus from 'http-status';
+import { authHandler } from '@middleware';
 
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Interest'])
+@middlewaresAll([authHandler()])
 export default class UserController {
 
     @request('get', '/interests')
@@ -44,10 +46,12 @@ export default class UserController {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = errors;
+            await next();
         } else if (await interestRepository.findOne({ name: interestToBeSaved.name })) {
             // return BAD REQUEST status code and name already exists error
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The specified name already exists';
+            await next();
         } else {
             // save the interest contained in the POST body
             const interest = await interestRepository.save(interestToBeSaved);
@@ -72,13 +76,14 @@ export default class UserController {
         const schoolToRemove: Interest = await interestRepository.findOne(+ctx.params.interestId || 0);
         if (!schoolToRemove) {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The user you are trying to delete doesn\'t exist in the db';
+            await next();
         } else {
             // the user is there so can be removed
             await interestRepository.remove(schoolToRemove);
             // return a NO CONTENT status code
-            ctx.status = httpStatus.NO_CONTENT;
+            ctx.status = httpStatus.OK;
             await next();
         }
     }

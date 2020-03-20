@@ -1,12 +1,13 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, body, responsesAll, tagsAll, responses } from 'koa-swagger-decorator';
+import { request, summary, body, tagsAll, responses, middlewares } from 'koa-swagger-decorator';
 import HttpStatus from 'http-status';
 import { sign } from 'jsonwebtoken';
 import { User, userSchema, otpSchema, OneTimePassword } from '@entities';
-import { generateOTP, sendSMS, SampleResponses } from '@shared';
+import { generateNumericCode, sendSMS, SampleResponses } from '@shared';
 import { config } from '@config';
+import { authHandler } from '@middleware';
 
 @tagsAll(['Auth'])
 export default class AuthController {
@@ -28,7 +29,7 @@ export default class AuthController {
             oneTimePassword = new OneTimePassword();
             oneTimePassword.phone = ctx.request.body.phone;
         }
-        oneTimePassword.otp = generateOTP();
+        oneTimePassword.otp = generateNumericCode(config.OTPLength);
 
         // validate OTP entity
         const errors: ValidationError[] = await validate(oneTimePassword); // errors is an array of validation errors
@@ -42,10 +43,10 @@ export default class AuthController {
             // send sms
             await sendSMS(ctx.request.body.phone, `${oneTimePassword.otp}`);
             // save the OTP contained in the POST body
-            const otp = await otpRepository.save(oneTimePassword);
+            const { otp, ...createdOtp} = await otpRepository.save(oneTimePassword);
             // return CREATED status code and updated OTP
-            ctx.status = HttpStatus.OK;
-            ctx.state.data = otp;
+            ctx.status = HttpStatus.CREATED;
+            ctx.state.data = createdOtp;
             await next();
         }
     }
@@ -90,6 +91,7 @@ export default class AuthController {
     @summary('Register new user')
     @body(userSchema)
     @responses(SampleResponses.CreateUser)
+    @middlewares([authHandler(true)])
     public static async createUser(ctx: BaseContext, next: () => void) {
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);

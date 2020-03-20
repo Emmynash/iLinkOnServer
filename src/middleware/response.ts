@@ -3,11 +3,12 @@ import compose from 'koa-compose';
 import { IResponse } from '../interface';
 
 const handler = async (ctx: BaseContext, next: () => void) => {
+    const STATUS = ctx.status;
     ctx.body = {} as IResponse;
     ctx.body = {
         meta: {
-            status: ctx.status,
-            message: ctx.state.message || 'success'
+            status: STATUS,
+            message: ctx.state.message || 'success',
         },
         data: ctx.state.data || {}
     };
@@ -16,6 +17,7 @@ const handler = async (ctx: BaseContext, next: () => void) => {
         ctx.body.meta.offset = ctx.state.pagination.offset;
         ctx.body.meta.totalCount = ctx.state.pagination.totalCount;
     }
+    ctx.status = STATUS;
     await next();
 };
 

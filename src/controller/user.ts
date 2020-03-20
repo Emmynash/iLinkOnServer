@@ -1,11 +1,14 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
 import { User, userSchema } from '../entity/User';
+import httpStatus = require('http-status');
+import { authHandler } from '@middleware';
 
 @responsesAll({ 200: { description: 'success'}, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['User'])
+@middlewaresAll([authHandler()])
 export default class UserController {
 
     @request('get', '/users')
@@ -19,7 +22,7 @@ export default class UserController {
         const users: User[] = await userRepository.find();
 
         // return OK status code and loaded users array
-        ctx.status = 200;
+        ctx.status = httpStatus.OK;
         ctx.state.data = users;
         await next();
     }
@@ -39,11 +42,11 @@ export default class UserController {
 
         if (user) {
             // return OK status code and loaded user object
-            ctx.status = 200;
+            ctx.status = httpStatus.OK;
             ctx.body = user;
         } else {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.BAD_REQUEST;
             ctx.body = 'The user you are trying to retrieve doesn\'t exist in the db';
         }
 
@@ -55,7 +58,7 @@ export default class UserController {
         id: { type: 'number', required: true, description: 'id of user' }
     })
     @body(userSchema)
-    public static async updateUser(ctx: BaseContext) {
+    public static async updateUser(ctx: BaseContext, next: () => void) {
 
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);
@@ -72,25 +75,25 @@ export default class UserController {
 
         if (errors.length > 0) {
             // return BAD REQUEST status code and errors array
-            ctx.status = 400;
+            ctx.status = httpStatus.BAD_REQUEST;
             ctx.body = errors;
         } else if (!await userRepository.findOne(userToBeUpdated.id)) {
             // check if a user with the specified id exists
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
-            ctx.body = 'The user you are trying to update doesn\'t exist in the db';
+            ctx.status = httpStatus.BAD_REQUEST;
+            ctx.state.message = 'The user you are trying to update doesn\'t exist in the db';
         } else if (await userRepository.findOne({ id: Not(Equal(userToBeUpdated.id)), email: userToBeUpdated.email })) {
             // return BAD REQUEST status code and email already exists error
-            ctx.status = 400;
-            ctx.body = 'The specified e-mail address already exists';
+            ctx.status = httpStatus.BAD_REQUEST;
+            ctx.state.message = 'The specified e-mail address already exists';
         } else {
             // save the user contained in the PUT body
             const user = await userRepository.save(userToBeUpdated);
             // return CREATED status code and updated user
-            ctx.status = 201;
-            ctx.body = user;
+            ctx.status = httpStatus.CREATED;
+            ctx.state.data = user;
         }
-
+        await next();
     }
 
     @request('delete', '/users/{id}')
