@@ -8,7 +8,10 @@ export class Group {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({
+        length: 255,
+        nullable: true,
+    })
     @IsOptional()
     @IsUrl()
     public displayPhoto: string;

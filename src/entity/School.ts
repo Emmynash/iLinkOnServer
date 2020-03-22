@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
 
 @Entity()
@@ -8,6 +8,7 @@ export class School {
 
     @Column({
         length: 255,
+        nullable: true,
     })
     @IsOptional()
     @IsUrl()
