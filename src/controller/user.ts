@@ -76,7 +76,7 @@ export default class UserController {
         if (errors.length > 0) {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
-            ctx.body = errors;
+            ctx.state.message = errors;
         } else if (!await userRepository.findOne(userToBeUpdated.id)) {
             // check if a user with the specified id exists
             // return a BAD REQUEST status code and error message

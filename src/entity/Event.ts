@@ -4,6 +4,7 @@ import { Group } from './Group';
 import { User } from './User';
 import { EventDate } from './EventDate';
 import { EventRSVP } from './EventRSVP';
+import { EventComment } from './EventComment';
 
 @Entity()
 export class Event {
@@ -56,6 +57,9 @@ export class Event {
 
     @Column({ default: false })
     public isPublic: boolean;
+
+    @OneToMany(type => EventComment, comment => comment.event)
+    public comments: EventComment[];
 
     @CreateDateColumn()
     public createdAt: Date;

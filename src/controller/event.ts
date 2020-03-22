@@ -2,7 +2,7 @@ import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
-import { Event, EventRSVP } from '@entities';
+import { Event, EventRSVP, eventCommentSchema, EventComment } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
@@ -80,16 +80,83 @@ export default class UserController {
         if (!event) {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The group you are trying to join doesn\'t exist';
+            ctx.state.message = 'The event doesn\'t exist';
             await next();
         } else {
             // Create an RSVP
             const rsvps = await eventRSVPRepository.find({ event });
 
-            ctx.status = httpStatus.CREATED;
+            ctx.status = httpStatus.OK;
             ctx.state.data = rsvps;
             await next();
         }
+    }
 
+    @request('post', '/events/{eventId}/comments')
+    @summary('Create comment on')
+    @path({
+        eventId: { type: 'number', required: true, description: 'Event ID' }
+    })
+    @body(eventCommentSchema)
+    public static async postComment(ctx: BaseContext, next: () => void) {
+
+        // get a event repository to perform operations with event
+        const eventRepository = getManager().getRepository(Event);
+        const eventCommentRepository = getManager().getRepository(EventComment);
+
+        const comment = new EventComment();
+        comment.comment = ctx.request.body.name;
+
+        // validate user entity
+        const errors: ValidationError[] = await validate(comment); // errors is an array of validation errors
+
+        if (errors.length > 0) {
+            // return BAD REQUEST status code and errors array
+            ctx.status = httpStatus.BAD_REQUEST;
+            ctx.state.message = errors;
+        } else {
+            // find the group by specified id
+            const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
+            if (!event) {
+                // return a BAD REQUEST status code and error message
+                ctx.status = httpStatus.NOT_FOUND;
+                ctx.state.message = 'The event you are trying to comment on doesn\'t exist';
+            } else {
+                // Create an RSVP
+                comment.event = event;
+                comment.user = ctx.state.user;
+                const createdComment = await eventCommentRepository.save(comment);
+                ctx.status = httpStatus.CREATED;
+                ctx.state.data = createdComment;
+            }
+            await next();
+        }
+    }
+
+    @request('get', '/events/{eventId}/comments')
+    @summary('Get event comments')
+    @path({
+        eventId: { type: 'number', required: true, description: 'Event ID' }
+    })
+    public static async getComments(ctx: BaseContext, next: () => void) {
+
+        // get a event repository to perform operations with event
+        const eventRepository = getManager().getRepository(Event);
+        const eventCommentRepository = getManager().getRepository(EventComment);
+
+        // find the group by specified id
+        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
+        if (!event) {
+            // return a BAD REQUEST status code and error message
+            ctx.status = httpStatus.NOT_FOUND;
+            ctx.state.message = 'The event doesn\'t exist';
+        } else {
+            // Create an RSVP
+            const comments = await eventCommentRepository.find({ event });
+
+            ctx.status = httpStatus.OK;
+            ctx.state.data = comments;
+        }
+        await next();
     }
 }
