@@ -98,12 +98,14 @@ export default class AuthController {
 
         // build up entity user to be saved
         const userToBeSaved: User = new User();
+        userToBeSaved.profilePhoto = ctx.request.body.profilePhoto;
         userToBeSaved.fName = ctx.request.body.fName;
         userToBeSaved.mName = ctx.request.body.mName;
         userToBeSaved.lName = ctx.request.body.lName;
         userToBeSaved.phone = ctx.state.temp.phone;
         userToBeSaved.email = ctx.request.body.email;
         userToBeSaved.interests = ctx.request.body.interests || [];
+        userToBeSaved.school = ctx.request.body.school;
 
         // validate user entity
         const errors: ValidationError[] = await validate(userToBeSaved); // errors is an array of validation errors

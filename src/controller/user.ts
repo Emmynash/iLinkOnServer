@@ -32,7 +32,7 @@ export default class UserController {
     @path({
         id: { type: 'number', required: true, description: 'id of user' }
     })
-    public static async getUser(ctx: BaseContext) {
+    public static async getUser(ctx: BaseContext, next: () => void) {
 
         // get a user repository to perform operations with user
         const userRepository: Repository<User> = getManager().getRepository(User);
@@ -43,12 +43,13 @@ export default class UserController {
         if (user) {
             // return OK status code and loaded user object
             ctx.status = httpStatus.OK;
-            ctx.body = user;
+            ctx.state.data = user;
         } else {
             // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.body = 'The user you are trying to retrieve doesn\'t exist in the db';
+            ctx.status = httpStatus.NOT_FOUND;
+            ctx.state.message = 'The user you are trying to retrieve doesn\'t exist in the db';
         }
+        await next();
 
     }
 

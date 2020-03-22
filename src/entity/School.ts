@@ -1,14 +1,16 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
-import { Length, IsOptional } from 'class-validator';
+import { Length, IsOptional, IsUrl } from 'class-validator';
 
 @Entity()
 export class School {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    @Length(10, 800)
+    @Column({
+        length: 255,
+    })
     @IsOptional()
+    @IsUrl()
     public displayPhoto: string;
 
     @Column({

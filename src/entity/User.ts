@@ -1,18 +1,25 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate } from 'typeorm';
-import { Length, IsEmail, IsPhoneNumber, IsOptional } from 'class-validator';
+import {
+    Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn,
+    OneToMany, BeforeInsert, BeforeUpdate, ManyToOne,
+} from 'typeorm';
+import { Length, IsEmail, IsPhoneNumber, IsOptional, IsUrl } from 'class-validator';
 import crypto from 'crypto';
 import { config } from '@config';
 import { GroupMember } from './GroupMember';
+import { School } from './School';
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
-    @Length(10, 800)
+    @Column({
+        length: 255,
+        nullable: true,
+    })
     @IsOptional()
-    profilePhoto?: string;
+    @IsUrl()
+    profilePhoto: string;
 
     @Column({
         length: 80,
@@ -48,6 +55,9 @@ export class User {
     })
     @IsPhoneNumber('ZZ')
     phone: string;
+
+    @ManyToOne(type => School)
+    school?: School;
 
     @Column({ type: 'numeric', array: true, default: '{}' })
     public interests: number[];

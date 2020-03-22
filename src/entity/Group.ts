@@ -14,7 +14,7 @@ export class Group {
     public displayPhoto: string;
 
     @Column({
-        length: 80
+        length: 255
     })
     @Length(2, 80)
     name: string;
