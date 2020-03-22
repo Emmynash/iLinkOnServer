@@ -10,7 +10,6 @@ export class Group {
 
     @Column({
         length: 255,
-        nullable: true,
     })
     @IsOptional()
     @IsUrl()

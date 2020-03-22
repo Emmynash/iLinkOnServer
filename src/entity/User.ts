@@ -15,7 +15,6 @@ export class User {
 
     @Column({
         length: 255,
-        nullable: true,
     })
     @IsOptional()
     @IsUrl()

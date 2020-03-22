@@ -8,7 +8,6 @@ export class School {
 
     @Column({
         length: 255,
-        nullable: true,
     })
     @IsOptional()
     @IsUrl()
