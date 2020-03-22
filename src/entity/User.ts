@@ -80,6 +80,7 @@ export class User {
 }
 
 export const userSchema = {
+    profilePhoto: { type: 'string', required: true, example: 'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro' },
     fName: { type: 'string', required: true, example: 'Kator' },
     mName: { type: 'string', required: false, example: 'Bryan' },
     lName: { type: 'string', required: true, example: 'James' },
