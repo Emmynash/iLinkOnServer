@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
 import { IsDate } from 'class-validator';
 import { Event } from './Event';
 
@@ -15,7 +15,7 @@ export class EventDate {
     @IsDate()
     endDate: Date;
 
-    @OneToMany(type => Event, event => event.dates)
+    @ManyToOne(type => Event, event => event.dates)
     public event: Event;
 
     @CreateDateColumn()

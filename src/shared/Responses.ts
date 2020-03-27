@@ -156,9 +156,31 @@ const CreateUser: ISampleResponses = {
     ...AllRequests,
 };
 
+const GetGroupMembers: ISampleResponses = {
+    [HttpStatus.OK]: {
+        description: 'Get group members successfully',
+        example: {
+            meta: {
+                status: HttpStatus.OK,
+            },
+            data:  [{
+                id: 6,
+                memberId: 2,
+                groupId: 6,
+                approved: true,
+                role: 'admin',
+                createdAt: '2020-03-27T10:29:30.879Z',
+                updatedAt: '2020-03-27T10:29:30.879Z',
+            }]
+        }
+    },
+    ...AllRequests,
+};
+
 export const SampleResponses = {
     AllRequests,
     GenerateOTP,
     VerifyOTP,
     CreateUser,
+    GetGroupMembers,
 };

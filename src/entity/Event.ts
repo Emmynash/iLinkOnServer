@@ -36,12 +36,13 @@ export class Event {
     @IsOptional()
     venue: string;
 
-    @OneToMany(type => EventDate, date => date.event)
+    @OneToMany(type => EventDate, date => date.event, {
+        eager: true,
+    })
     @JoinTable()
     dates: EventDate[];
 
     @OneToMany(type => EventRSVP, rsvp => rsvp.event)
-    @JoinTable()
     rsvps: EventRSVP[];
 
     @ManyToOne(type => Group, { cascade: true })
@@ -87,13 +88,10 @@ export const eventSchema = {
         type: 'array',
         required: true,
         items: {
-            type: 'array',
-            items: {
-                type: 'object',
-                example: {
-                    startDate: '2020-03-11T06:36:07.519Z',
-                    endDate: '2020-03-11T09:36:07.519Z',
-                },
+            type: 'object',
+            example: {
+                startDate: '2020-03-11T06:36:07.519Z',
+                endDate: '2020-03-11T09:36:07.519Z',
             },
         },
     },

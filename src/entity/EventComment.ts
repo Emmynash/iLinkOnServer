@@ -14,7 +14,7 @@ export class EventComment {
         nullable: false,
     })
     @Length(2, 240)
-    comment: string;
+    public comment: string;
 
     @ManyToOne(type => Event)
     event: Event;

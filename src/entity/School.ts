@@ -19,9 +19,6 @@ export class School {
     @Length(2, 80)
     name: string;
 
-    @Column({ type: 'numeric', array: true, default: '{}' })
-    public interests: number[];
-
     @CreateDateColumn()
     public createdAt: Date;
 

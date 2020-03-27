@@ -1,10 +1,11 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, responses } from 'koa-swagger-decorator';
 import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event, EventDate } from '@entities';
 import httpStatus from 'http-status';
 import { authHandler } from '@middleware';
+import { SampleResponses } from '@shared';
 
 @responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request'}, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Group'])
@@ -66,8 +67,8 @@ export default class GroupController {
         const groupToBeSaved: Group = new Group();
         groupToBeSaved.name = ctx.request.body.name;
         groupToBeSaved.description = ctx.request.body.description;
-        groupToBeSaved.interests = ctx.request.body.interests ? ctx.request.body.interests : undefined;
-        groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto ? ctx.request.body.displayPhoto : undefined;
+        groupToBeSaved.interests = ctx.request.body.interests;
+        groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto;
 
         // validate group entity
         const errors: ValidationError[] = await validate(groupToBeSaved); // errors is an array of validation errors
@@ -92,6 +93,7 @@ export default class GroupController {
             groupMember.group = group;
             groupMember.role = UserRole.ADMIN;
             groupMember.approved = true;
+            console.log(ctx.state.user);
             await groupMemberRepository.save(groupMember);
 
             // return CREATED status code and updated group
@@ -255,6 +257,7 @@ export default class GroupController {
     @path({
         groupId: { type: 'number', required: true, description: 'id of group' }
     })
+    @responses(SampleResponses.GetGroupMembers)
     public static async getMembers(ctx: BaseContext, next: () => void) {
 
         // get a group repository to perform operations with group
@@ -295,7 +298,7 @@ export default class GroupController {
         const group: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!group) {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The group you are trying to create an event for doesn\'t exist';
             await next();
         } else if (!await groupMemberRepository.findOne({ group, member: ctx.state.user, role: UserRole.ADMIN })) {
@@ -303,26 +306,25 @@ export default class GroupController {
             ctx.state.message = 'Only a group admin can create and event for a group';
             await next();
         } else {
-            // Create event dates
-            const eventDates = ctx.request.body.dates.mao(async (date) => {
-                let eventDate = new EventDate();
-                eventDate.startDate = new Date(date.startDate);
-                eventDate.endDate = new Date(date.endDate || date.startDate);
-                eventDate = await eventDateRepository.save(eventDate);
-                return eventDate;
-            });
-
             // Create an event
-            const event = new Event();
+            let event = new Event();
             event.displayPhoto = ctx.request.body.displayPhoto;
             event.name = ctx.request.body.name;
             event.venue = ctx.request.body.venue;
             event.group = group;
             event.description = ctx.request.body.description;
-            event.dates = eventDates;
             event.createdBy = ctx.state.user;
-            await eventRepository.save(event);
+            event = await eventRepository.save(event);
 
+            // Create event dates
+            const eventDates = ctx.request.body.dates.map(async (date) => {
+                let eventDate = new EventDate();
+                eventDate.startDate = new Date(date.startDate);
+                eventDate.endDate = new Date(date.endDate || date.startDate);
+                eventDate.event = event;
+                eventDate = await eventDateRepository.save(eventDate);
+                return eventDate;
+            });
             ctx.status = httpStatus.OK;
             ctx.state.data = event;
             await next();

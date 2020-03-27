@@ -15,9 +15,9 @@ export const authHandler = (isTemp = false) => {
         }
 
         try {
-            const payload = verify(token, config.jwtSecret) as User;
+            const payload = verify(token, config.jwtSecret);
             if (isTemp) ctx.state.temp = payload;
-            else ctx.state.user = payload;
+            else ctx.state.user = payload.user;
         } catch (err) {
             ctx.status = HttpStatus.UNAUTHORIZED;
             ctx.state.message = 'Invalid token: ' + err;

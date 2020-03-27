@@ -6,7 +6,7 @@ import { Event, EventRSVP, eventCommentSchema, EventComment } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
-@responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request'}, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token'}})
+@responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request' }, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token' } })
 @tagsAll(['Event'])
 @middlewaresAll([authHandler()])
 export default class UserController {
@@ -24,6 +24,33 @@ export default class UserController {
         // return OK status code and loaded events array
         ctx.status = httpStatus.OK;
         ctx.state.data = events;
+        await next();
+    }
+
+    @request('get', '/events/{eventId}')
+    @summary('Get event details')
+    @path({
+        eventId: { type: 'number', required: true, description: 'Event ID' }
+    })
+    public static async getEvent(ctx: BaseContext, next: () => void) {
+        // get a event repository to perform operations with event
+        const eventRepository = getManager().getRepository(Event);
+        const eventCommentRepository = getManager().getRepository(EventComment);
+
+        // find the group by specified id
+        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
+        console.log(event);
+        if (!event) {
+            // return a BAD REQUEST status code and error message
+            ctx.status = httpStatus.NOT_FOUND;
+            ctx.state.message = 'The event doesn\'t exist';
+        } else {
+            // Get all event comments
+            const comments = await eventCommentRepository.find({ event });
+
+            ctx.status = httpStatus.OK;
+            ctx.state.data = { ...event, comments };
+        }
         await next();
     }
 
@@ -105,7 +132,7 @@ export default class UserController {
         const eventCommentRepository = getManager().getRepository(EventComment);
 
         const comment = new EventComment();
-        comment.comment = ctx.request.body.name;
+        comment.comment = ctx.request.body.comment;
 
         // validate user entity
         const errors: ValidationError[] = await validate(comment); // errors is an array of validation errors
@@ -119,7 +146,7 @@ export default class UserController {
             const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
             if (!event) {
                 // return a BAD REQUEST status code and error message
-                ctx.status = httpStatus.NOT_FOUND;
+                ctx.status = httpStatus.BAD_REQUEST;
                 ctx.state.message = 'The event you are trying to comment on doesn\'t exist';
             } else {
                 // Create an RSVP
@@ -129,33 +156,6 @@ export default class UserController {
                 ctx.status = httpStatus.CREATED;
                 ctx.state.data = createdComment;
             }
-            await next();
-        }
-    }
-
-    @request('get', '/events/{eventId}/comments')
-    @summary('Get event comments')
-    @path({
-        eventId: { type: 'number', required: true, description: 'Event ID' }
-    })
-    public static async getComments(ctx: BaseContext, next: () => void) {
-
-        // get a event repository to perform operations with event
-        const eventRepository = getManager().getRepository(Event);
-        const eventCommentRepository = getManager().getRepository(EventComment);
-
-        // find the group by specified id
-        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
-        if (!event) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The event doesn\'t exist';
-        } else {
-            // Create an RSVP
-            const comments = await eventCommentRepository.find({ event });
-
-            ctx.status = httpStatus.OK;
-            ctx.state.data = comments;
         }
         await next();
     }
