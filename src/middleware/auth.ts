@@ -23,7 +23,6 @@ export const authHandler = (isTemp = false) => {
             ctx.state.message = 'Invalid token: ' + err;
             throw 'Invalid token' + err;
         }
-
         await next();
     };
 

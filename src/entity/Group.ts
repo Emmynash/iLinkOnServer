@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, BeforeInsert, BeforeUpdate, JoinTable, AfterLoad } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
 import { GroupMember } from './GroupMember';
 import { Event } from './Event';
@@ -31,7 +31,9 @@ export class Group {
     @Column({ type: 'numeric', array: true, default: '{}' })
     public interests: number[];
 
-    @OneToMany(type => GroupMember, groupMember => groupMember.group)
+    @OneToMany(type => GroupMember, groupMember => groupMember.group, {
+        eager: true
+    })
     @JoinTable()
     public members: GroupMember[];
 
@@ -59,6 +61,8 @@ export class Group {
         // For now all groups are public
         this.isPublic = true;
     }
+
+    public isMember?: boolean;
 }
 
 export const groupSchema = {

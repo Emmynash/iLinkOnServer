@@ -73,7 +73,7 @@ export default class AuthController {
             const user: User = await userRepository.findOne({ phone: oneTimePassword.phone });
             if (user) {
                 response['user'] = user;
-                response['token'] = sign({ ...user }, config.jwtSecret, { expiresIn: '24000h' });
+                response['token'] = sign({ user }, config.jwtSecret, { expiresIn: '24000h' });
             } else {
                 response['new_user'] = true;
                 response['token'] = sign({ phone: ctx.request.body.phone }, config.jwtSecret, { expiresIn: '1h' });

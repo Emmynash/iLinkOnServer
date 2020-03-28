@@ -14,13 +14,23 @@ export default class GroupController {
 
     @request('get', '/groups')
     @summary('Find all groups')
-    public static async getGroups(ctx: BaseContext, next: () => void) {
+    public static async getAll(ctx: BaseContext, next: () => void) {
 
         // get a group repository to perform operations with group
         const groupRepository: Repository<Group> = getManager().getRepository(Group);
 
         // load all groups
         const groups: Group[] = await groupRepository.find({ deleted: false });
+        groups.forEach((group) => {
+            const groupMember = group.members.find((member) => {
+                return member.memberId === ctx.state.user.id;
+            });
+            if (groupMember) {
+                group.isMember = true;
+            } else {
+                group.isMember = false;
+            }
+        });
 
         // return OK status code and loaded groups array
         ctx.status = httpStatus.OK;
@@ -93,7 +103,6 @@ export default class GroupController {
             groupMember.group = group;
             groupMember.role = UserRole.ADMIN;
             groupMember.approved = true;
-            console.log(ctx.state.user);
             await groupMemberRepository.save(groupMember);
 
             // return CREATED status code and updated group
