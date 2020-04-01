@@ -1,11 +1,12 @@
 import { BaseContext } from 'koa';
-import { getManager, Repository, Not, Equal, Like } from 'typeorm';
+import { getManager, Repository, Not, Equal } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, orderAll } from 'koa-swagger-decorator';
 import { User, userSchema } from '../entity/User';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
+@orderAll(3)
 @responsesAll({ 200: { description: 'success'}, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['User'])
 @middlewaresAll([authHandler()])
@@ -27,10 +28,10 @@ export default class UserController {
         await next();
     }
 
-    @request('get', '/users/{id}')
+    @request('get', '/users/{userId}')
     @summary('Find user by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of user' }
+        userId: { type: 'number', required: true, description: 'User ID' }
     })
     public static async getUser(ctx: BaseContext, next: () => void) {
 
@@ -38,7 +39,7 @@ export default class UserController {
         const userRepository: Repository<User> = getManager().getRepository(User);
 
         // load user by id
-        const user: User = await userRepository.findOne(+ctx.params.id || 0);
+        const user: User = await userRepository.findOne(+ctx.params.userId || 0);
 
         if (user) {
             // return OK status code and loaded user object
@@ -53,10 +54,10 @@ export default class UserController {
 
     }
 
-    @request('put', '/users/{id}')
+    @request('put', '/users/{userId}')
     @summary('Update a user')
     @path({
-        id: { type: 'number', required: true, description: 'id of user' }
+        userId: { type: 'number', required: true, description: 'User ID' }
     })
     @body(userSchema)
     public static async updateUser(ctx: BaseContext, next: () => void) {
@@ -67,7 +68,7 @@ export default class UserController {
         // update the user by specified id
         // build up entity user to be updated
         const userToBeUpdated: User = new User();
-        userToBeUpdated.id = +ctx.params.id || 0; // will always have a number, this will avoid errors
+        userToBeUpdated.id = +ctx.params.userId || 0; // will always have a number, this will avoid errors
         userToBeUpdated.fName = ctx.request.body.name;
         userToBeUpdated.email = ctx.request.body.email;
 
@@ -97,32 +98,32 @@ export default class UserController {
         await next();
     }
 
-    @request('delete', '/users/{id}')
+    @request('delete', '/users/{userId}')
     @summary('Delete user by id')
     @path({
-        id: { type: 'number', required: true, description: 'id of user' }
+        userId: { type: 'number', required: true, description: 'User ID' }
     })
-    public static async deleteUser(ctx: BaseContext) {
-
+    public static async deleteUser(ctx: BaseContext, next: () => void) {
         // get a user repository to perform operations with user
         const userRepository = getManager().getRepository(User);
 
         // find the user by specified id
-        const userToRemove: User = await userRepository.findOne(+ctx.params.id || 0);
+        const userToRemove: User = await userRepository.findOne(+ctx.params.userId || 0);
         if (!userToRemove) {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
-            ctx.body = 'The user you are trying to delete doesn\'t exist in the db';
+            ctx.state.message = 'The user you are trying to delete doesn\'t exist in the db';
         } else if (ctx.state.user.email !== userToRemove.email) {
             // check user's token id and user id are the same
             // if not, return a FORBIDDEN status code and error message
             ctx.status = 403;
-            ctx.body = 'A user can only be deleted by himself';
+            ctx.state.message = 'A user can only be deleted by himself';
         } else {
             // the user is there so can be removed
             await userRepository.remove(userToRemove);
             // return a NO CONTENT status code
-            ctx.status = 204;
+            ctx.status = httpStatus.NO_CONTENT;
         }
+        await next();
     }
 }

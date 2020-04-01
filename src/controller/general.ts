@@ -1,7 +1,8 @@
 import { BaseContext } from 'koa';
-import { description, request, summary, tagsAll } from 'koa-swagger-decorator';
+import { description, request, summary, tagsAll, orderAll } from 'koa-swagger-decorator';
 import httpStatus from 'http-status';
 
+@orderAll(1)
 @tagsAll(['General'])
 export default class GeneralController {
 

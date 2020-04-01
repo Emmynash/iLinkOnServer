@@ -1,5 +1,6 @@
 import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
+import crypto from 'crypto';
 
 @Entity()
 export class School {
@@ -28,8 +29,10 @@ export class School {
     @BeforeInsert()
     @BeforeUpdate()
     public preSave() {
+        const size = 200;
         if (!this.displayPhoto) {
-            this.displayPhoto = 'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro';
+            const md5 = crypto.createHash('md5').update(this.name).digest('hex');
+            this.displayPhoto = `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
         }
     }
 }

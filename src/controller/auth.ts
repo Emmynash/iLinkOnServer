@@ -1,7 +1,7 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, body, tagsAll, responses, middlewares } from 'koa-swagger-decorator';
+import { request, summary, body, tagsAll, responses, middlewares, orderAll } from 'koa-swagger-decorator';
 import HttpStatus from 'http-status';
 import { sign } from 'jsonwebtoken';
 import { User, userSchema, otpSchema, OneTimePassword } from '@entities';
@@ -9,6 +9,7 @@ import { generateNumericCode, sendSMS, SampleResponses } from '@shared';
 import { config } from '@config';
 import { authHandler } from '@middleware';
 
+@orderAll(2)
 @tagsAll(['Auth'])
 export default class AuthController {
 

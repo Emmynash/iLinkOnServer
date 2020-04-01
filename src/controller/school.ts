@@ -1,11 +1,12 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, orderAll } from 'koa-swagger-decorator';
 import { schoolSchema, School } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
+@orderAll(7)
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['School'])
 @middlewaresAll([authHandler()])
@@ -30,7 +31,7 @@ export default class UserController {
     @request('get', '/schools/{schoolId}')
     @summary('Find school by id')
     @path({
-        schoolId: { type: 'number', required: true, description: 'id of school' }
+        schoolId: { type: 'number', required: true, description: 'School id' }
     })
     public static async getSchool(ctx: BaseContext, next: () => void) {
 
@@ -44,13 +45,12 @@ export default class UserController {
             // return OK status code and loaded school object
             ctx.status = httpStatus.OK;
             ctx.state.data = school;
-            await next();
         } else {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The school you are trying to retrieve doesn\'t exist in the db';
-            await next();
         }
+        await next();
 
     }
 
@@ -83,8 +83,8 @@ export default class UserController {
             // return CREATED status code and updated school
             ctx.status = httpStatus.CREATED;
             ctx.state.data = school;
-            await next();
         }
+        await next();
     }
 
     @request('put', '/schools/{schoolId}')
@@ -112,33 +112,29 @@ export default class UserController {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = errors;
-            await next();
         } else if (!await schoolRepository.findOne(schoolToBeUpdated.id)) {
             // check if a school with the specified id exists
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The school you are trying to update doesn\'t exist in the db';
-            await next();
         } else if (await schoolRepository.findOne({ id: Not(Equal(schoolToBeUpdated.id)), name: schoolToBeUpdated.name })) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The specified e-mail address already exists';
-            await next();
         } else {
             // save the school contained in the PUT body
             const school = await schoolRepository.save(schoolToBeUpdated);
             // return CREATED status code and updated school
             ctx.status = httpStatus.CREATED;
             ctx.state.data = school;
-            await next();
         }
-
+        await next();
     }
 
     @request('delete', '/schools/{schoolId}')
     @summary('Delete school by id')
     @path({
-        id: { type: 'number', required: true, description: 'School ID' }
+        schoolId: { type: 'number', required: true, description: 'School ID' }
     })
     public static async deleteSchool(ctx: BaseContext, next: () => void) {
 
@@ -156,13 +152,12 @@ export default class UserController {
             // if not, return a FORBIDDEN status code and error message
             ctx.status = 403;
             ctx.state.message = 'A user can only be deleted by himself';
-            await next();
         } else {
             // the user is there so can be removed
             await schoolRepository.remove(schoolToRemove);
             // return a NO CONTENT status code
             ctx.status = httpStatus.NO_CONTENT;
-            await next();
         }
+        await next();
     }
 }

@@ -1,12 +1,13 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository, Not, Equal, Like } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, responses } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, responses, orderAll } from 'koa-swagger-decorator';
 import { groupSchema, Group, GroupMember, UserRole, eventSchema, Event, EventDate } from '@entities';
 import httpStatus from 'http-status';
 import { authHandler } from '@middleware';
 import { SampleResponses } from '@shared';
 
+@orderAll(4)
 @responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request'}, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['Group'])
 @middlewaresAll([authHandler()])
@@ -55,13 +56,12 @@ export default class GroupController {
             // return OK status code and loaded group object
             ctx.status = httpStatus.OK;
             ctx.state.data = group;
-            await next();
         } else {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The group you are trying to retrieve doesn\'t exist in the db';
-            await next();
         }
+        await next();
     }
 
     @request('post', '/groups')
@@ -87,12 +87,10 @@ export default class GroupController {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = errors;
-            await next();
         } else if (await groupRepository.findOne({ name: groupToBeSaved.name })) {
             // return BAD REQUEST status code and name already exists error
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'A group already exists with the specified name';
-            await next();
         } else {
             // save the group contained in the POST body
             const group = await groupRepository.save(groupToBeSaved);
@@ -108,14 +106,14 @@ export default class GroupController {
             // return CREATED status code and updated group
             ctx.status = httpStatus.CREATED;
             ctx.state.data = group;
-            await next();
         }
+        await next();
     }
 
     @request('put', '/groups/{groupId}')
     @summary('Update a group')
     @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'Group ID' }
     })
     @body(groupSchema)
     public static async updateGroup(ctx: BaseContext, next: () => void) {
@@ -137,26 +135,23 @@ export default class GroupController {
             // return BAD REQUEST status code and errors array
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = errors;
-            await next();
         } else if (!await groupRepository.findOne(groupToBeUpdated.id)) {
             // check if a group with the specified id exists
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to update doesn\'t exist in the db';
-            await next();
         } else if (await groupRepository.findOne({ id: Not(Equal(groupToBeUpdated.id)), name: groupToBeUpdated.name })) {
             // return BAD REQUEST status code and email already exists error
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The specified group name already exists';
-            await next();
         } else {
             // save the group contained in the PUT body
             const group = await groupRepository.save(groupToBeUpdated);
             // return CREATED status code and updated group
             ctx.status = httpStatus.CREATED;
             ctx.state.data = group;
-            await next();
         }
+        await next();
 
     }
 
@@ -176,22 +171,20 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
             ctx.state.message = 'The group you are trying to delete doesn\'t exist in the db';
-            await next();
         } else if (ctx.state.user.name !== groupToRemove.name) {
             // TODO Check if group is admin
             // check group's token id and group id are the same
             // if not, return a FORBIDDEN status code and error message
             ctx.status = 403;
             ctx.state.message = 'A group can only be deleted by the creator';
-            await next();
         } else {
             // the group is there so can be removed
             groupToRemove.deleted;
             await groupRepository.save(groupToRemove);
             // return a NO CONTENT status code
             ctx.status = httpStatus.NO_CONTENT;
-            await next();
         }
+        await next();
 
     }
 
@@ -210,15 +203,13 @@ export default class GroupController {
         const groupToJoin: Group = await groupRepository.findOne(+ctx.params.groupId || 0);
         if (!groupToJoin) {
             // return a BAD REQUEST status code and error message
-            ctx.status = 400;
+            ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
         } else if (!groupToJoin.isPublic) {
             // This is not a public group. A request may have to be sent to the admin
             // After which the flag `approved` will have to be set on GroupMember
-            ctx.status = 403;
+            ctx.status = httpStatus.FORBIDDEN;
             ctx.state.message = 'A user can only be deleted by himself';
-            await next();
         } else {
             // Create a groupMember
             const groupMember = new GroupMember();
@@ -230,14 +221,14 @@ export default class GroupController {
 
             ctx.status = httpStatus.CREATED;
             ctx.state.data = groupToJoin;
-            await next();
         }
+        await next();
     }
 
     @request('post', '/groups/{groupId}/leave')
     @summary('Leave a group')
     @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'Group ID' }
     })
     public static async exitGroup(ctx: BaseContext, next: () => void) {
 
@@ -251,20 +242,19 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to leave doesn\'t exist';
-            await next();
         } else {
             // Create a groupMember
             await groupMemberRepository.delete({ group: groupToExit, member: ctx.state.user });
 
             ctx.status = httpStatus.OK;
-            await next();
         }
+        await next();
     }
 
     @request('get', '/groups/{groupId}/members')
     @summary('Get group members')
     @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'Group ID' }
     })
     @responses(SampleResponses.GetGroupMembers)
     public static async getMembers(ctx: BaseContext, next: () => void) {
@@ -279,15 +269,14 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.NOT_FOUND;
             ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
         } else {
             // Create a groupMember
             const groupMembers = await groupMemberRepository.find({ group });
 
             ctx.status = httpStatus.OK;
             ctx.state.data = groupMembers;
-            await next();
         }
+        await next();
     }
 
     @request('post', '/groups/{groupId}/events')
@@ -309,11 +298,9 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'The group you are trying to create an event for doesn\'t exist';
-            await next();
         } else if (!await groupMemberRepository.findOne({ group, member: ctx.state.user, role: UserRole.ADMIN })) {
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = 'Only a group admin can create and event for a group';
-            await next();
         } else {
             // Create an event
             let event = new Event();
@@ -336,14 +323,14 @@ export default class GroupController {
             });
             ctx.status = httpStatus.OK;
             ctx.state.data = event;
-            await next();
         }
+        await next();
     }
 
     @request('get', '/groups/{groupId}/events')
     @summary('Get a group\'s events')
     @path({
-        groupId: { type: 'number', required: true, description: 'id of group' }
+        groupId: { type: 'number', required: true, description: 'Group ID' }
     })
     public static async getEvents(ctx: BaseContext, next: () => void) {
 
@@ -357,13 +344,12 @@ export default class GroupController {
             // return a BAD REQUEST status code and error message
             ctx.status = 400;
             ctx.state.message = 'The group doesn\'t exist';
-            await next();
         } else {
             // Create an event
             const events = await eventRepository.find({ group });
             ctx.status = httpStatus.OK;
             ctx.state.data = events;
-            await next();
         }
+        await next();
     }
 }

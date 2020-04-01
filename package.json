@@ -75,7 +75,7 @@
     "koa-helmet": "^4.2.0",
     "koa-jwt": "^3.3.2",
     "koa-router": "^7.4.0",
-    "koa-swagger-decorator": "^1.6.1",
+    "koa-swagger-decorator": "github:16kilobyte/koa-swagger-decorator#feature/add-paths-sorting-decorator",
     "koa-unless": "^1.0.7",
     "module-alias": "^2.2.2",
     "pg": "^7.18.1",
