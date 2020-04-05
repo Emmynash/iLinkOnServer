@@ -7,7 +7,7 @@ import { config } from '@config';
 
 export const authHandler = (isTemp = false) => {
     const authMiddleware = async (ctx: BaseContext, next: () => void) => {
-        const token: string | null = ctx.header.authorization || ctx.request.headers.token || ctx.request.query.token;
+        const token: string | null = ctx.header.authorization || ctx.header.tempauthorization || ctx.request.headers.token || ctx.request.query.token;
         if (!token) {
             ctx.status = HttpStatus.UNAUTHORIZED;
             ctx.state.message = 'Invalid token';

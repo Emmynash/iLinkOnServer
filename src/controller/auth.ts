@@ -1,7 +1,7 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, body, tagsAll, responses, middlewares, orderAll } from 'koa-swagger-decorator';
+import { request, summary, body, tagsAll, responses, middlewares, orderAll, security } from 'koa-swagger-decorator';
 import HttpStatus from 'http-status';
 import { sign } from 'jsonwebtoken';
 import { User, userSchema, otpSchema, OneTimePassword } from '@entities';
@@ -66,7 +66,6 @@ export default class AuthController {
             // return BAD REQUEST status code as OTP was not found
             ctx.status = HttpStatus.BAD_REQUEST;
             ctx.state.message = 'Invalid OTP';
-            await next();
         } else {
             const response = {};
             const userRepository: Repository<User> = getManager().getRepository(User);
@@ -84,14 +83,15 @@ export default class AuthController {
             // return OK status code and updated OTP
             ctx.status = HttpStatus.OK;
             ctx.state.data = response;
-            await next();
         }
+        await next();
     }
 
     @request('post', '/auth/register')
     @summary('Register new user')
     @body(userSchema)
     @responses(SampleResponses.CreateUser)
+    @security([{ TempAuthorizationToken: [] }])
     @middlewares([authHandler(true)])
     public static async createUser(ctx: BaseContext, next: () => void) {
         // get a user repository to perform operations with user
@@ -115,14 +115,12 @@ export default class AuthController {
             // return BAD REQUEST status code and errors array
             ctx.status = HttpStatus.BAD_REQUEST;
             ctx.state.message = errors;
-            await next();
         } else {
             const existingUser = await userRepository.findOne({ phone: userToBeSaved.phone });
             if (existingUser) {
                 // return BAD REQUEST status code and email already exists error
                 ctx.status = HttpStatus.BAD_REQUEST;
                 ctx.state.message = 'The specified phone number already exists';
-                await next();
             } else {
                 // save the user contained in the POST body
                 const user = await userRepository.save(userToBeSaved);
@@ -132,8 +130,8 @@ export default class AuthController {
                     user,
                     token: sign({ user }, config.jwtSecret, { expiresIn: '250000h' }),
                 };
-                await next();
             }
         }
+        await next();
     }
 }
