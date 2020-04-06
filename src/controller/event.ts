@@ -1,7 +1,7 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, orderAll } from 'koa-swagger-decorator';
+import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, orderAll, securityAll } from 'koa-swagger-decorator';
 import { Event, EventRSVP, eventCommentSchema, EventComment } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
@@ -10,6 +10,7 @@ import { authHandler } from '@middleware';
 @responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request' }, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token' } })
 @tagsAll(['Event'])
 @middlewaresAll([authHandler()])
+@securityAll([{ AuthorizationToken: [] }])
 export default class UserController {
 
     @request('get', '/events')
