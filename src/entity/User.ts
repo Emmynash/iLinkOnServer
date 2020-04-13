@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import { config } from '@config';
 import { GroupMember } from './GroupMember';
 import { School } from './School';
+import { Message } from './Message';
 
 @Entity()
 export class User {
@@ -63,6 +64,12 @@ export class User {
 
     @OneToMany(type => GroupMember, groupMember => groupMember.member)
     public groupMembers: GroupMember[];
+
+    @OneToMany(type => Message, message => message.sender)
+    public sentMessages: Message[];
+
+    @OneToMany(type => Message, message => message.sender)
+    public receivedMessages: Message[];
 
     @CreateDateColumn()
     public createdAt: Date;

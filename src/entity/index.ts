@@ -5,6 +5,7 @@ export * from './EventRSVP';
 export * from './Interest';
 export * from './Group';
 export * from './GroupMember';
+export * from './Message';
 export * from './OneTimePassword';
 export * from './User';
 export * from './School';
