@@ -2,12 +2,11 @@ import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateCol
 import { Length, IsOptional, IsUrl } from 'class-validator';
 import { GroupMember } from './GroupMember';
 import { Event } from './Event';
+import { BaseEntity } from './BaseEntity';
+import { Message } from './Message';
 
 @Entity()
-export class Group {
-    @PrimaryGeneratedColumn()
-    id: number;
-
+export class Group extends BaseEntity {
     @Column({
         length: 255,
     })
@@ -40,17 +39,14 @@ export class Group {
     @OneToMany(type => Event, event => event.group)
     public events: Event[];
 
+    @OneToMany(type => Message, message => message.group)
+    public messages: Message[];
+
     @Column({ default: false })
     public deleted: boolean;
 
     @Column({ default: false })
     public isPublic: boolean;
-
-    @CreateDateColumn()
-    public createdAt: Date;
-
-    @UpdateDateColumn()
-    public updatedAt: Date;
 
     @BeforeInsert()
     @BeforeUpdate()
