@@ -6,7 +6,7 @@ import { schoolSchema, School } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
-@orderAll(7)
+@orderAll(8)
 @responsesAll({ 200: { description: 'success', }, 400: { description: 'bad request'}, 401: { description: 'unauthorized, missing/wrong jwt token'}})
 @tagsAll(['School'])
 @middlewaresAll([authHandler()])

@@ -20,6 +20,7 @@ import crypto from 'crypto';
 import { config } from '@config';
 import { GroupMember } from './GroupMember';
 import { School } from './School';
+import { Message } from './Message';
 import { EventComment } from './EventComment';
 
 @Entity()
@@ -77,6 +78,12 @@ export class User {
 
   @OneToMany((type) => GroupMember, (groupMember) => groupMember.member)
   public groupMembers: GroupMember[];
+
+  @OneToMany((type) => Message, (message) => message.sender)
+  public sentMessages: Message[];
+
+  @OneToMany((type) => Message, (message) => message.sender)
+  public receivedMessages: Message[];
 
   @OneToMany((type) => EventComment, (comment) => comment.user)
   public comments: EventComment[];

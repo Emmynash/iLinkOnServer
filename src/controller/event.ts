@@ -1,164 +1,187 @@
 import { BaseContext } from 'koa';
 import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
-import { request, summary, path, body, responsesAll, tagsAll, middlewaresAll, orderAll, securityAll } from 'koa-swagger-decorator';
+import {
+  request,
+  summary,
+  path,
+  body,
+  responsesAll,
+  tagsAll,
+  middlewaresAll,
+  orderAll,
+  securityAll,
+} from 'koa-swagger-decorator';
 import { Event, EventRSVP, eventCommentSchema, EventComment } from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
 @orderAll(5)
-@responsesAll({ [httpStatus.OK]: { description: 'success', }, [httpStatus.BAD_REQUEST]: { description: 'bad request' }, [httpStatus.UNAUTHORIZED]: { description: 'unauthorized, missing/wrong jwt token' } })
+@responsesAll({
+  [httpStatus.OK]: { description: 'success' },
+  [httpStatus.BAD_REQUEST]: { description: 'bad request' },
+  [httpStatus.UNAUTHORIZED]: {
+    description: 'unauthorized, missing/wrong jwt token',
+  },
+})
 @tagsAll(['Event'])
 @middlewaresAll([authHandler()])
 @securityAll([{ AuthorizationToken: [] }])
 export default class UserController {
+  @request('get', '/events')
+  @summary('Find all events')
+  public static async getEvents(ctx: BaseContext, next: () => void) {
+    // get a event repository to perform operations with event
+    const eventRepository: Repository<Event> = getManager().getRepository(
+      Event
+    );
 
-    @request('get', '/events')
-    @summary('Find all events')
-    public static async getEvents(ctx: BaseContext, next: () => void) {
+    // load all events
+    const events: Event[] = await eventRepository.find();
 
-        // get a event repository to perform operations with event
-        const eventRepository: Repository<Event> = getManager().getRepository(Event);
+    // return OK status code and loaded events array
+    ctx.status = httpStatus.OK;
+    ctx.state.data = events;
+    await next();
+  }
 
-        // load all events
-        const events: Event[] = await eventRepository.find();
+  @request('get', '/events/{eventId}')
+  @summary('Get event details')
+  @path({
+    eventId: { type: 'number', required: true, description: 'Event ID' },
+  })
+  public static async getEvent(ctx: BaseContext, next: () => void) {
+    // get a event repository to perform operations with event
+    const eventRepository = getManager().getRepository(Event);
+    const eventCommentRepository = getManager().getRepository(EventComment);
 
-        // return OK status code and loaded events array
-        ctx.status = httpStatus.OK;
-        ctx.state.data = events;
-        await next();
+    // find the group by specified id
+    const event: Event = await eventRepository.findOne(
+      +ctx.params.eventId || 0
+    );
+    console.log(event);
+    if (!event) {
+      // return a BAD REQUEST status code and error message
+      ctx.status = httpStatus.NOT_FOUND;
+      ctx.state.message = "The event doesn't exist";
+    } else {
+      // Get all event comments
+      const comments = await eventCommentRepository.find({ event });
+
+      ctx.status = httpStatus.OK;
+      ctx.state.data = { ...event, comments };
     }
+    await next();
+  }
 
-    @request('get', '/events/{eventId}')
-    @summary('Get event details')
-    @path({
-        eventId: { type: 'number', required: true, description: 'Event ID' }
-    })
-    public static async getEvent(ctx: BaseContext, next: () => void) {
-        // get a event repository to perform operations with event
-        const eventRepository = getManager().getRepository(Event);
-        const eventCommentRepository = getManager().getRepository(EventComment);
+  @request('post', '/events/{eventId}/rsvp')
+  @summary('RSVP an event')
+  @path({
+    eventId: { type: 'number', required: true, description: 'Event ID' },
+  })
+  public static async rsvpEvent(ctx: BaseContext, next: () => void) {
+    // get a event repository to perform operations with event
+    const eventRepository = getManager().getRepository(Event);
+    const eventRSVPRepository = getManager().getRepository(EventRSVP);
 
-        // find the group by specified id
-        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
-        console.log(event);
-        if (!event) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The event doesn\'t exist';
-        } else {
-            // Get all event comments
-            const comments = await eventCommentRepository.find({ event });
+    // find the group by specified id
+    const event: Event = await eventRepository.findOne(
+      +ctx.params.eventId || 0
+    );
+    if (!event) {
+      // return a BAD REQUEST status code and error message
+      ctx.status = httpStatus.NOT_FOUND;
+      ctx.state.message = "The group you are trying to join doesn't exist";
+      await next();
+    } else if (!event.isPublic) {
+      // This is not a public group. A request may have to be sent to the admin
+      // After which the flag `approved` will have to be set on Event RSVP
+      ctx.status = httpStatus.FORBIDDEN;
+      ctx.state.message =
+        'You cannot RSVP for a private event without a join code';
+      await next();
+    } else {
+      // Create an RSVP
+      const rsvp = new EventRSVP();
+      rsvp.user = ctx.state.user;
+      rsvp.event = event;
+      await eventRSVPRepository.save(rsvp);
 
-            ctx.status = httpStatus.OK;
-            ctx.state.data = { ...event, comments };
-        }
-        await next();
+      ctx.status = httpStatus.CREATED;
+      ctx.state.data = rsvp;
+      await next();
     }
+  }
 
-    @request('post', '/events/{eventId}/rsvp')
-    @summary('RSVP an event')
-    @path({
-        eventId: { type: 'number', required: true, description: 'Event ID' }
-    })
-    public static async rsvpEvent(ctx: BaseContext, next: () => void) {
+  @request('get', '/events/{eventId}/rsvp')
+  @summary('Get event RSVPs')
+  @path({
+    eventId: { type: 'number', required: true, description: 'Event ID' },
+  })
+  public static async getRsvps(ctx: BaseContext, next: () => void) {
+    // get a event repository to perform operations with event
+    const eventRepository = getManager().getRepository(Event);
+    const eventRSVPRepository = getManager().getRepository(EventRSVP);
 
-        // get a event repository to perform operations with event
-        const eventRepository = getManager().getRepository(Event);
-        const eventRSVPRepository = getManager().getRepository(EventRSVP);
+    // find the group by specified id
+    const event: Event = await eventRepository.findOne(
+      +ctx.params.eventId || 0
+    );
+    if (!event) {
+      // return a BAD REQUEST status code and error message
+      ctx.status = httpStatus.NOT_FOUND;
+      ctx.state.message = "The event doesn't exist";
+      await next();
+    } else {
+      // Create an RSVP
+      const rsvps = await eventRSVPRepository.find({ relations: ['user'] });
 
-        // find the group by specified id
-        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
-        if (!event) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The group you are trying to join doesn\'t exist';
-            await next();
-        } else if (!event.isPublic) {
-            // This is not a public group. A request may have to be sent to the admin
-            // After which the flag `approved` will have to be set on Event RSVP
-            ctx.status = httpStatus.FORBIDDEN;
-            ctx.state.message = 'You cannot RSVP for a private event without a join code';
-            await next();
-        } else {
-            // Create an RSVP
-            const rsvp = new EventRSVP();
-            rsvp.user = ctx.state.user;
-            rsvp.event = event;
-            await eventRSVPRepository.save(rsvp);
-
-            ctx.status = httpStatus.CREATED;
-            ctx.state.data = rsvp;
-            await next();
-        }
+      ctx.status = httpStatus.OK;
+      ctx.state.data = rsvps;
+      await next();
     }
+  }
 
-    @request('get', '/events/{eventId}/rsvp')
-    @summary('Get event RSVPs')
-    @path({
-        eventId: { type: 'number', required: true, description: 'Event ID' }
-    })
-    public static async getRsvps(ctx: BaseContext, next: () => void) {
+  @request('post', '/events/{eventId}/comments')
+  @summary('Create comment on')
+  @path({
+    eventId: { type: 'number', required: true, description: 'Event ID' },
+  })
+  @body(eventCommentSchema)
+  public static async postComment(ctx: BaseContext, next: () => void) {
+    // get a event repository to perform operations with event
+    const eventRepository = getManager().getRepository(Event);
+    const eventCommentRepository = getManager().getRepository(EventComment);
 
-        // get a event repository to perform operations with event
-        const eventRepository = getManager().getRepository(Event);
-        const eventRSVPRepository = getManager().getRepository(EventRSVP);
+    const comment = new EventComment();
+    comment.comment = ctx.request.body.comment;
 
-        // find the group by specified id
-        const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
-        if (!event) {
-            // return a BAD REQUEST status code and error message
-            ctx.status = httpStatus.NOT_FOUND;
-            ctx.state.message = 'The event doesn\'t exist';
-            await next();
-        } else {
-            // Create an RSVP
-            const rsvps = await eventRSVPRepository.find({ event });
+    // validate user entity
+    const errors: ValidationError[] = await validate(comment); // errors is an array of validation errors
 
-            ctx.status = httpStatus.OK;
-            ctx.state.data = rsvps;
-            await next();
-        }
+    if (errors.length > 0) {
+      // return BAD REQUEST status code and errors array
+      ctx.status = httpStatus.BAD_REQUEST;
+      ctx.state.message = errors;
+    } else {
+      // find the group by specified id
+      const event: Event = await eventRepository.findOne(
+        +ctx.params.eventId || 0
+      );
+      if (!event) {
+        // return a BAD REQUEST status code and error message
+        ctx.status = httpStatus.BAD_REQUEST;
+        ctx.state.message =
+          "The event you are trying to comment on doesn't exist";
+      } else {
+        // Create an RSVP
+        comment.event = event;
+        comment.user = ctx.state.user;
+        const createdComment = await eventCommentRepository.save(comment);
+        ctx.status = httpStatus.CREATED;
+        ctx.state.data = createdComment;
+      }
     }
-
-    @request('post', '/events/{eventId}/comments')
-    @summary('Create comment on')
-    @path({
-        eventId: { type: 'number', required: true, description: 'Event ID' }
-    })
-    @body(eventCommentSchema)
-    public static async postComment(ctx: BaseContext, next: () => void) {
-
-        // get a event repository to perform operations with event
-        const eventRepository = getManager().getRepository(Event);
-        const eventCommentRepository = getManager().getRepository(EventComment);
-
-        const comment = new EventComment();
-        comment.comment = ctx.request.body.comment;
-
-        // validate user entity
-        const errors: ValidationError[] = await validate(comment); // errors is an array of validation errors
-
-        if (errors.length > 0) {
-            // return BAD REQUEST status code and errors array
-            ctx.status = httpStatus.BAD_REQUEST;
-            ctx.state.message = errors;
-        } else {
-            // find the group by specified id
-            const event: Event = await eventRepository.findOne(+ctx.params.eventId || 0);
-            if (!event) {
-                // return a BAD REQUEST status code and error message
-                ctx.status = httpStatus.BAD_REQUEST;
-                ctx.state.message = 'The event you are trying to comment on doesn\'t exist';
-            } else {
-                // Create an RSVP
-                comment.event = event;
-                comment.user = ctx.state.user;
-                const createdComment = await eventCommentRepository.save(comment);
-                ctx.status = httpStatus.CREATED;
-                ctx.state.data = createdComment;
-            }
-        }
-        await next();
-    }
+    await next();
+  }
 }

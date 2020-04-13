@@ -16,6 +16,8 @@ export interface IConfig {
     twilioSender: string;
     OTPLength: number;
     presentationalDomain: string;
+
+    pageSize: number;
 }
 
 const isDevMode = process.env.NODE_ENV == 'development';
@@ -35,6 +37,8 @@ const config: IConfig = {
     twilioSender: process.env.TWILIO_FROM || '',
     OTPLength: +(process.env.OTP_LENGTH || 4),
     presentationalDomain: process.env.PRESENTATIONAL_DOMAIN || 'ilinkon.com',
+
+    pageSize: 20,
 };
 
 export { config };

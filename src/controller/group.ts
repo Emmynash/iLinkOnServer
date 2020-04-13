@@ -11,6 +11,7 @@ import {
   middlewaresAll,
   responses,
   orderAll,
+  securityAll,
 } from 'koa-swagger-decorator';
 import {
   groupSchema,
@@ -36,6 +37,7 @@ import { reverse } from 'dns';
 })
 @tagsAll(['Group'])
 @middlewaresAll([authHandler()])
+@securityAll([{ AuthorizationToken: [] }])
 export default class GroupController {
   @request('get', '/groups')
   @summary('Find all groups')
