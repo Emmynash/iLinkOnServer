@@ -66,7 +66,9 @@ export default class UserController {
       ctx.state.message = "The event doesn't exist";
     } else {
       // Get all event comments
-      const comments = await eventCommentRepository.find({ event });
+      const comments = await eventCommentRepository.find({
+        relations: ['user'],
+      });
 
       ctx.status = httpStatus.OK;
       ctx.state.data = { ...event, comments };
