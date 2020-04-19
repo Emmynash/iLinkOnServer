@@ -138,6 +138,8 @@ export default class AuthController {
     userToBeSaved.interests = ctx.request.body.interests || [];
     userToBeSaved.school = ctx.request.body.school;
 
+    console.log(userToBeSaved.phone);
+
     // validate user entity
     const errors: ValidationError[] = await validate(userToBeSaved); // errors is an array of validation errors
 

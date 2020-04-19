@@ -1,5 +1,5 @@
 import { BaseContext } from 'koa';
-import { getManager, Repository } from 'typeorm';
+import { getManager, Repository, createConnection, Connection } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import {
   request,
@@ -39,6 +39,9 @@ export default class UserController {
     // load all events
     const events: Event[] = await eventRepository.find();
 
+    // reverse events array
+    events.reverse();
+
     // return OK status code and loaded events array
     ctx.status = httpStatus.OK;
     ctx.state.data = events;
@@ -66,9 +69,9 @@ export default class UserController {
       ctx.state.message = "The event doesn't exist";
     } else {
       // Get all event comments
-      const comments = await eventCommentRepository.find({
-        relations: ['user'],
-      });
+      const comments = await eventCommentRepository.find({ event });
+
+      comments.reverse();
 
       ctx.status = httpStatus.OK;
       ctx.state.data = { ...event, comments };
@@ -157,6 +160,7 @@ export default class UserController {
 
     const comment = new EventComment();
     comment.comment = ctx.request.body.comment;
+    comment.profilePhoto = ctx.state.user.profilePhoto;
 
     // validate user entity
     const errors: ValidationError[] = await validate(comment); // errors is an array of validation errors

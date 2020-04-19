@@ -22,6 +22,13 @@ export class EventComment {
   id: number;
 
   @Column({
+    nullable: true,
+  })
+  @IsOptional()
+  @IsUrl()
+  profilePhoto: string;
+
+  @Column({
     length: 240,
     nullable: false,
   })
@@ -31,8 +38,11 @@ export class EventComment {
   @ManyToOne((type) => Event)
   event: Event;
 
-  @ManyToOne((type) => User, (user) => user.comments)
+  @ManyToOne((type) => User)
   public user: User;
+
+  @JoinTable()
+  public users: User[];
 
   @Column({ default: false })
   public deleted: boolean;

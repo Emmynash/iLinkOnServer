@@ -259,6 +259,7 @@ export default class GroupController {
       // Create a groupMember
       const groupMember = new GroupMember();
       groupMember.member = ctx.state.user;
+      groupMember.profilePhoto = ctx.state.user.profilePhoto;
       groupMember.group = groupToJoin;
       groupMember.role = UserRole.MEMBER;
       groupMember.approved = true;
@@ -318,11 +319,10 @@ export default class GroupController {
     if (!group) {
       // return a BAD REQUEST status code and error message
       ctx.status = httpStatus.NOT_FOUND;
-      ctx.state.message = "The group you are trying to join doesn't exist";
+      ctx.state.message = "The group you are trying to retrieve doesn't exist";
     } else {
-      // Create a groupMember
+      // retrieve groupMembers
       const groupMembers = await groupMemberRepository.find({ group });
-
       ctx.status = httpStatus.OK;
       ctx.state.data = groupMembers;
     }
