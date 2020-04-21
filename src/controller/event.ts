@@ -145,6 +145,8 @@ export default class UserController {
       // Create an RSVP
       const rsvps = await eventRSVPRepository.find({ relations: ['user'] });
 
+      rsvps.reverse();
+
       ctx.status = httpStatus.OK;
       ctx.state.data = rsvps;
       await next();
