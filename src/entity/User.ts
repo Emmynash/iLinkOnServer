@@ -22,6 +22,7 @@ import { GroupMember } from './GroupMember';
 import { School } from './School';
 import { Message } from './Message';
 import { EventComment } from './EventComment';
+import { EventRSVP } from './EventRSVP';
 
 @Entity()
 export class User {
@@ -87,6 +88,9 @@ export class User {
 
   @OneToMany((type) => EventComment, (comment) => comment.user)
   public comments: EventComment[];
+
+  @OneToMany((type) => EventRSVP, (eventRSVP) => eventRSVP.user)
+  public eventRSVPS: EventRSVP[];
 
   @CreateDateColumn()
   public createdAt: Date;

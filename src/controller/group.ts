@@ -254,7 +254,7 @@ export default class GroupController {
       // This is not a public group. A request may have to be sent to the admin
       // After which the flag `approved` will have to be set on GroupMember
       ctx.status = httpStatus.FORBIDDEN;
-      ctx.state.message = 'A user can only be deleted by himself';
+      ctx.state.message = 'A user can only be added by the admin';
     } else {
       // Create a groupMember
       const groupMember = new GroupMember();

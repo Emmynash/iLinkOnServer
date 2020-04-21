@@ -87,33 +87,37 @@ export default class UserController {
   public static async rsvpEvent(ctx: BaseContext, next: () => void) {
     // get a event repository to perform operations with event
     const eventRepository = getManager().getRepository(Event);
-    const eventRSVPRepository = getManager().getRepository(EventRSVP);
+    const eventRSVPRepository: Repository<EventRSVP> = getManager().getRepository(
+      EventRSVP
+    );
 
-    // find the group by specified id
+    // find the event by specified id
     const event: Event = await eventRepository.findOne(
       +ctx.params.eventId || 0
     );
+
+    // Create an RSVP
+    const rsvp: EventRSVP = new EventRSVP();
+    rsvp.user = ctx.state.user;
+    rsvp.event = event;
+
     if (!event) {
       // return a BAD REQUEST status code and error message
       ctx.status = httpStatus.NOT_FOUND;
-      ctx.state.message = "The group you are trying to join doesn't exist";
+      ctx.state.message = "The event you are trying to join doesn't exist";
       await next();
     } else if (!event.isPublic) {
-      // This is not a public group. A request may have to be sent to the admin
+      // This is not a public event. A request may have to be sent to the admin
       // After which the flag `approved` will have to be set on Event RSVP
       ctx.status = httpStatus.FORBIDDEN;
       ctx.state.message =
         'You cannot RSVP for a private event without a join code';
       await next();
     } else {
-      // Create an RSVP
-      const rsvp = new EventRSVP();
-      rsvp.user = ctx.state.user;
-      rsvp.event = event;
-      await eventRSVPRepository.save(rsvp);
+      const eventRSVP = await eventRSVPRepository.save(rsvp);
 
       ctx.status = httpStatus.CREATED;
-      ctx.state.data = rsvp;
+      ctx.state.data = eventRSVP;
       await next();
     }
   }
@@ -128,7 +132,7 @@ export default class UserController {
     const eventRepository = getManager().getRepository(Event);
     const eventRSVPRepository = getManager().getRepository(EventRSVP);
 
-    // find the group by specified id
+    // find the event by specified id
     const event: Event = await eventRepository.findOne(
       +ctx.params.eventId || 0
     );
