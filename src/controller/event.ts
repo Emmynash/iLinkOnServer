@@ -106,6 +106,11 @@ export default class UserController {
       ctx.status = httpStatus.NOT_FOUND;
       ctx.state.message = "The event you are trying to join doesn't exist";
       await next();
+    } else if (await eventRSVPRepository.findOne({ user: ctx.state.user })) {
+      // return BAD REQUEST status code and user already joined error
+      ctx.status = httpStatus.BAD_REQUEST;
+      ctx.state.message = 'The specified user has joined already';
+      await next();
     } else if (!event.isPublic) {
       // This is not a public event. A request may have to be sent to the admin
       // After which the flag `approved` will have to be set on Event RSVP
