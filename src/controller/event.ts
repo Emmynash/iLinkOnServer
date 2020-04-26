@@ -109,7 +109,7 @@ export default class UserController {
     } else if (await eventRSVPRepository.findOne({ user: ctx.state.user })) {
       // return BAD REQUEST status code and user already joined error
       ctx.status = httpStatus.BAD_REQUEST;
-      ctx.state.message = 'The specified user has joined already';
+      ctx.state.message = 'The specified user is already attending this event';
       await next();
     } else if (!event.isPublic) {
       // This is not a public event. A request may have to be sent to the admin
