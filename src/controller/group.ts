@@ -18,6 +18,7 @@ import {
   Group,
   GroupMember,
   UserRole,
+  UserPerm,
   eventSchema,
   Event,
   EventDate,
@@ -116,6 +117,7 @@ export default class GroupController {
     groupToBeSaved.description = ctx.request.body.description;
     groupToBeSaved.interests = ctx.request.body.interests;
     groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto;
+    groupToBeSaved.role = UserPerm.ADMIN;
 
     // validate group entity
     const errors: ValidationError[] = await validate(groupToBeSaved); // errors is an array of validation errors
