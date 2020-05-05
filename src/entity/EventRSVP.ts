@@ -7,6 +7,7 @@ import {
   OneToMany,
   ManyToOne,
 } from 'typeorm';
+import { Length, IsOptional, IsUrl } from 'class-validator';
 import { Event } from './Event';
 import { User } from './User';
 
@@ -20,6 +21,12 @@ export class EventRSVP {
 
   @ManyToOne((type) => Event)
   public event: Event;
+
+  @Column({
+    nullable: true,
+  })
+  @IsOptional()
+  public memberId: number;
 
   @CreateDateColumn()
   public createdAt: Date;

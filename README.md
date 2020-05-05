@@ -569,3 +569,5 @@ To install or update these dependencies you can use `npm install` or `npm update
 ** Added a delivery message to SMS Text
 ** Reverse groups array
 \*\* One-to-many/Many-to-one relationship for EventComments and User entities
+**Added memberId in eventRSVP entity, and load eventRSVP in Event entity
+**
