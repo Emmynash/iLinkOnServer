@@ -99,6 +99,7 @@ export default class UserController {
     const rsvp: EventRSVP = new EventRSVP();
     rsvp.user = ctx.state.user;
     rsvp.event = event;
+    rsvp.memberId = ctx.state.user.id;
 
     if (!event) {
       // return a BAD REQUEST status code and error message
