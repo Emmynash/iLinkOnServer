@@ -9,5 +9,5 @@ export class BaseEntity {
     public readonly createdAt: Date;
 
     @UpdateDateColumn()
-    public readonly updatedAt: Date;
+    public updatedAt: Date;
 }

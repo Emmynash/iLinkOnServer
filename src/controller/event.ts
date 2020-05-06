@@ -62,7 +62,6 @@ export default class UserController {
     const event: Event = await eventRepository.findOne(
       +ctx.params.eventId || 0
     );
-    console.log(event);
     if (!event) {
       // return a BAD REQUEST status code and error message
       ctx.status = httpStatus.NOT_FOUND;

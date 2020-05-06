@@ -2,6 +2,7 @@ import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
 import { Group } from './Group';
+import { MessageThread } from './MessageThread';
 
 @Entity()
 export class Message extends BaseEntity {
@@ -11,11 +12,6 @@ export class Message extends BaseEntity {
     @ManyToOne(type => User, user => user.sentMessages)
     sender: User;
 
-    @ManyToOne(type => User, user => user.receivedMessages)
-    public receiver: User;
-
-    @ManyToOne(type => Group, group => group.messages, {
-        onDelete: 'CASCADE',
-    })
-    public group: Group;
+    @ManyToOne(type => MessageThread)
+    public thread: MessageThread;
 }

@@ -15,6 +15,7 @@ import { GroupMember } from './GroupMember';
 import { Event } from './Event';
 import { BaseEntity } from './BaseEntity';
 import { Message } from './Message';
+import { MessageThread } from './MessageThread';
 
 @Entity()
 export class Group extends BaseEntity {
@@ -50,8 +51,8 @@ export class Group extends BaseEntity {
   @OneToMany((type) => Event, (event) => event.group)
   public events: Event[];
 
-  @OneToMany((type) => Message, (message) => message.group)
-  public messages: Message[];
+  @OneToMany(type => MessageThread, thread => thread.group)
+  public messageThreads: MessageThread[];
 
   @Column({ default: false })
   public deleted: boolean;

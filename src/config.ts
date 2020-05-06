@@ -18,6 +18,15 @@ export interface IConfig {
     presentationalDomain: string;
 
     pageSize: number;
+
+    pusher: {
+      appId: string;
+      key: string;
+      secret: string;
+      cluster: string;
+      encrypted: boolean;
+      restServer: string;
+    };
 }
 
 const isDevMode = process.env.NODE_ENV == 'development';
@@ -39,6 +48,16 @@ const config: IConfig = {
     presentationalDomain: process.env.PRESENTATIONAL_DOMAIN || 'ilinkon.com',
 
     pageSize: 20,
+
+    // Pusher
+    pusher: {
+      appId: process.env.PUSHER_APP_ID,
+      key: process.env.PUSHER_APP_KEY,
+      secret: process.env.PUSHER_APP_SECRET,
+      cluster: 'eu',
+      encrypted: true,
+      restServer: process.env.PUSHER_REST_SERVER,
+    }
 };
 
 export { config };

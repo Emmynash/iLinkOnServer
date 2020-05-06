@@ -4,14 +4,18 @@ import helmet from 'koa-helmet';
 import cors from '@koa/cors';
 import winston from 'winston';
 import { createConnection } from 'typeorm';
+import http, { request } from 'http';
+import WebSocket from 'ws';
 import 'reflect-metadata';
 import * as PostgressConnectionStringParser from 'pg-connection-string';
 
-import { errorHandler, responseHandler } from '@middleware';
+import { errorHandler, responseHandler, wsAuthHandler } from '@middleware';
 import { logger } from './logging';
 import { config } from './config';
 import { router } from './router';
 import { cron } from './cron';
+import { IWsRequest } from './interface';
+import { handleConnection } from './socket/handlers/connection';
 
 // Get DB connection options from env variable
 const connectionOptions = PostgressConnectionStringParser.parse(config.databaseUrl);
@@ -67,9 +71,27 @@ createConnection({
     // Register cron job to do any action needed
     cron.start();
 
+    const server = http.createServer(app.callback());
+    const webSocket = new WebSocket.Server({ noServer: true, clientTracking: false });
 
-    app.listen(config.port);
+    webSocket.on('connection', handleConnection);
+
+    server.on('upgrade', (request: IWsRequest, socket, head) => {
+        // This function is not defined on purpose. Implement it with your own logic.
+        wsAuthHandler(request, (err) => {
+            if (err || !request.user) {
+                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+                socket.destroy();
+                return;
+            }
+
+            webSocket.handleUpgrade(request, socket, head, function done(ws) {
+                webSocket.emit('connection', ws, request);
+            });
+        });
+    });
+
+    server.listen(config.port);
 
     console.log(`Server running on port ${config.port}`);
-
 }).catch(err => console.log('TypeORM connection error: ', err));
