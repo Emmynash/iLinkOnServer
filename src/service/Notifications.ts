@@ -30,7 +30,7 @@ export class NotificationService {
 
   public async registerToken(token: string) {
     const existingToken = await this.repository.find({
-      token
+      token,
     });
     if (existingToken) {
       throw new Error('The token is already registered');

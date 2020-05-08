@@ -1,4 +1,3 @@
-import http, { request } from 'http';
 import WebSocket from 'ws';
 import { getManager } from 'typeorm';
 
@@ -6,9 +5,9 @@ import { IWsRequest } from '@interfaces';
 import { MessageThread, Message } from '@entities';
 import { NotificationService } from '@services';
 
-const map = new Map();
+const map = new Map<number, WebSocket>();
 
-export const handleConnection = (ws: WebSocket.Server, request: IWsRequest) => {
+export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
     const userId = request.user.id;
 
     map.set(userId, ws);
@@ -28,14 +27,23 @@ export const handleConnection = (ws: WebSocket.Server, request: IWsRequest) => {
                 await messageRepository.save(message);
                 messageThread.updatedAt = new Date();
                 await messageThreadRepository.save(messageThread);
-
-                const notificationService = new NotificationService();
-                const notification = {
-                    title: 'New Message',
-                    body: text,
-                };
                 const participant = messageThread.participants.find((p) => p.id !== userId);
-                await notificationService.sendTo(notification, participant, messageThread.group);
+
+                const receiverWs = map.get(participant.id);
+                if (receiverWs) {
+                    const payload = {
+                        thread: messageThread,
+                        message,
+                    };
+                    receiverWs.send(JSON.stringify(payload));
+                } else {
+                    const notificationService = new NotificationService();
+                    const notification = {
+                        title: `${request.user.fName} ${request.user.lName}`,
+                        body: text,
+                    };
+                    await notificationService.sendTo(notification, participant, messageThread.group);
+                }
             }
         }
         console.log(`Received message ${msg} from user ${userId}`);
