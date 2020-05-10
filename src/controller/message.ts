@@ -76,28 +76,66 @@ export default class AuthController {
         const groupId = +ctx.request.body.groupId || 0;
         const userId = +ctx.request.body.groupId || 0;
         if (groupId || userId) {
+            const messageThreadParticipantRepository = getManager().getRepository(MessageThreadParticipant);
             const messageThreadRepository = getManager().getRepository(MessageThread);
-            const messageThread = new MessageThread();
-            if (groupId) {
-                messageThread.groupId = groupId;
-            }
-
-            await messageThreadRepository.save(messageThread);
-
+            const userThreads = await messageThreadParticipantRepository.find({
+                participant: ctx.state.user.id,
+            });
+            let response = {};
             if (userId) {
-                const messageThreadParticipantRepository = getManager().getRepository(MessageThreadParticipant);
-                const firstParticipant = new MessageThreadParticipant();
-                firstParticipant.participantId = ctx.state.user;
-                firstParticipant.thread = messageThread;
+                let existingThreadParties: MessageThreadParticipant = undefined;
+                for (let i = 0; i < userThreads.length; i++) {
+                    const query = await messageThreadParticipantRepository.findOne({
+                        where: {
+                            participantId: userId,
+                            threadId: userThreads[i].threadId,
+                        },
+                        relations: ['thread'],
+                    });
+                    if (query) {
+                        existingThreadParties = query;
+                        break;
+                    }
+                }
+                if (existingThreadParties) {
+                    response = existingThreadParties.thread;
+                } else {
+                    const messageThread = new MessageThread();
+                    const firstParticipant = new MessageThreadParticipant();
+                    firstParticipant.participantId = ctx.state.user;
+                    firstParticipant.thread = messageThread;
 
-                const secondParticipant = new MessageThreadParticipant();
-                secondParticipant.participantId = userId;
-                secondParticipant.thread = messageThread;
-                await messageThreadParticipantRepository.save([firstParticipant, secondParticipant]);
+                    const secondParticipant = new MessageThreadParticipant();
+                    secondParticipant.participantId = userId;
+                    secondParticipant.thread = messageThread;
+                    await messageThreadParticipantRepository.save([firstParticipant, secondParticipant]);
+                    response = messageThread;
+                }
+            } else {
+                let existingThread: MessageThread = undefined;
+                for (let i = 0; i < userThreads.length; i++) {
+                    const query = await messageThreadRepository.findOne({
+                        where: {
+                            groupId: groupId,
+                            threadId: userThreads[i].threadId,
+                        },
+                    });
+                    if (query) {
+                        existingThread = query;
+                        break;
+                    }
+                }
+                if (existingThread) {
+                    response = existingThread;
+                } else {
+                    const messageThread = new MessageThread();
+                    messageThread.groupId = groupId;
+                    await messageThreadRepository.save(messageThread);
+                    response = messageThread;
+                }
             }
-
-            ctx.status = HttpStatus.CREATED;
-            ctx.state.data = {};
+            ctx.status = HttpStatus.OK;
+            ctx.state.data = response;
             await next();
         } else {
             ctx.status = HttpStatus.BAD_REQUEST;

@@ -13,7 +13,8 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
     map.set(userId, ws);
 
     ws.on('message', async (msg: string) => {
-        const { threadId, text } = JSON.parse(msg) as { threadId?: number; text: string };
+        const { threadId, text } = JSON.parse(msg) as { threadId: number; text: string };
+        console.log(`Received message ${threadId}:${text} from user ${userId}`);
         if (threadId && text) {
             const messageRepository = getManager().getRepository(Message);
             const messageThreadRepository = getManager().getRepository(MessageThread);
@@ -46,7 +47,6 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
                 }
             }
         }
-        console.log(`Received message ${msg} from user ${userId}`);
     });
     ws.on('close', () => {
         // Delete user from map

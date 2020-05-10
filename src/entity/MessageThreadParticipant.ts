@@ -11,6 +11,11 @@ export class MessageThreadParticipant extends BaseEntity {
     })
     public participantId: number;
 
+    @Column({
+        nullable: true,
+    })
+    public threadId: number;
+
     @ManyToOne(type => MessageThread, thread => thread.participants)
     public thread: MessageThread;
 
