@@ -159,7 +159,9 @@ export default class AuthController {
           }
         }
         if (existingThreadParties) {
-          response = existingThreadParties.thread;
+          const thread = existingThreadParties.thread;
+          thread.participants = await thread.participants;
+          response = thread;
         } else {
           const messageThread = new MessageThread();
           await messageThreadRepository.save(messageThread);
@@ -171,9 +173,9 @@ export default class AuthController {
           const secondParticipant = new MessageThreadParticipant();
           secondParticipant.participantId = userId;
           secondParticipant.thread = messageThread;
-          await messageThreadParticipantRepository.save(
-            [firstParticipant, secondParticipant]
-          );
+          const participants = [firstParticipant, secondParticipant];
+          await messageThreadParticipantRepository.save(participants);
+          messageThread.participants = participants;
           response = messageThread;
         }
       } else {
@@ -195,10 +197,10 @@ export default class AuthController {
         } else {
           const messageThread = new MessageThread();
           messageThread.groupId = groupId;
-          const createGroupThread = await messageThreadRepository.save(
+          await messageThreadRepository.save(
             messageThread
           );
-          response = createGroupThread;
+          response = messageThread;
         }
       }
       ctx.status = HttpStatus.OK;

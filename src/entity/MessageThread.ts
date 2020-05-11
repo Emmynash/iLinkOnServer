@@ -15,12 +15,15 @@ export class MessageThread extends BaseEntity {
     @OneToMany(type => Message, message => message.thread)
     messages: Message[];
 
-    @OneToMany(type => MessageThreadParticipant, participant => participant.thread)
-    public participants: User[];
+    @OneToMany(type => MessageThreadParticipant, participant => participant.thread, {
+        eager: true,
+    })
+    public participants: MessageThreadParticipant[];
 
     @OneToOne(type => Group, group => group.messageThread, {
         onDelete: 'CASCADE',
         nullable: true,
+        eager: true,
     })
     public group: Group;
 }

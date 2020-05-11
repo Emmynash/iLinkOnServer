@@ -43,7 +43,8 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
                         title: `${request.user.fName} ${request.user.lName}`,
                         body: text,
                     };
-                    await notificationService.sendTo(notification, participant, messageThread.group);
+                    const receiver = await participant.participant;
+                    await notificationService.sendTo(notification, receiver, messageThread.group);
                 }
             }
         }
