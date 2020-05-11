@@ -1,4 +1,4 @@
-import { Entity, Column, ManyToOne, OneToMany, OneToOne } from 'typeorm';
+import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
 import { Group } from './Group';
@@ -18,7 +18,7 @@ export class MessageThread extends BaseEntity {
     @OneToMany(type => MessageThreadParticipant, participant => participant.thread)
     public participants: User[];
 
-    @OneToOne(type => Group, group => group.messageThreads, {
+    @OneToOne(type => Group, group => group.messageThread, {
         onDelete: 'CASCADE',
         nullable: true,
     })

@@ -1,14 +1,11 @@
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
   OneToMany,
   BeforeInsert,
   BeforeUpdate,
   JoinTable,
-  AfterLoad,
+  OneToOne,
 } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
 import { GroupMember } from './GroupMember';
@@ -57,8 +54,8 @@ export class Group extends BaseEntity {
   @OneToMany((type) => Event, (event) => event.group)
   public events: Event[];
 
-  @OneToMany(type => MessageThread, thread => thread.group)
-  public messageThreads: MessageThread[];
+  @OneToOne(type => MessageThread, thread => thread.group)
+  public messageThread: MessageThread;
 
   @Column({ default: false })
   public deleted: boolean;

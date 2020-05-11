@@ -19,7 +19,7 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
             const messageRepository = getManager().getRepository(Message);
             const messageThreadRepository = getManager().getRepository(MessageThread);
             const messageThread = await messageThreadRepository.findOne(+threadId || 0);
-            if (MessageThread) {
+            if (messageThread) {
                 const message = new Message();
                 message.sender = request.user;
                 message.thread = messageThread;

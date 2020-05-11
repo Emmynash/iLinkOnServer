@@ -127,8 +127,8 @@ export default class AuthController {
   @summary('Create message thread')
   @summary('This action should happen before DM can begin')
   public static async CreateMessageThread(ctx: BaseContext, next: () => void) {
-    const groupId = +ctx.request.body.groupId || 0;
-    const userId = +ctx.request.body.userId || 0;
+    const groupId = +ctx.request.body.groupId || undefined;
+    const userId = +ctx.request.body.userId || undefined;
 
     console.log(groupId, userId);
     if (groupId || userId) {
@@ -137,7 +137,10 @@ export default class AuthController {
       );
       const messageThreadRepository = getManager().getRepository(MessageThread);
       const userThreads = await messageThreadParticipantRepository.find({
-        participant: ctx.state.user.id,
+        where: {
+          participantId: ctx.state.user.id,
+        },
+        relations: ['thread']
       });
       let response = {};
       if (userId) {
@@ -159,6 +162,8 @@ export default class AuthController {
           response = existingThreadParties.thread;
         } else {
           const messageThread = new MessageThread();
+          await messageThreadRepository.save(messageThread);
+
           const firstParticipant = new MessageThreadParticipant();
           firstParticipant.participantId = ctx.state.user;
           firstParticipant.thread = messageThread;
@@ -166,10 +171,10 @@ export default class AuthController {
           const secondParticipant = new MessageThreadParticipant();
           secondParticipant.participantId = userId;
           secondParticipant.thread = messageThread;
-          const createUserThread = await messageThreadParticipantRepository.save(
+          await messageThreadParticipantRepository.save(
             [firstParticipant, secondParticipant]
           );
-          response = createUserThread;
+          response = messageThread;
         }
       } else {
         let existingThread: MessageThread = undefined;

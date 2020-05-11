@@ -11,12 +11,10 @@ import { MessageThread } from './MessageThread';
 
 @Entity()
 export class MessageThreadParticipant extends BaseEntity {
-  @Column({
-    nullable: true,
-  })
+  @Column()
   public participantId: number;
 
-  @Column({ nullable: true })
+  @Column()
   public threadId: number;
 
   @ManyToOne((type) => MessageThread, (thread) => thread.participants)
