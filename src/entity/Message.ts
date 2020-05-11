@@ -1,8 +1,13 @@
 import { Entity, Column, ManyToOne } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
-import { Group } from './Group';
 import { MessageThread } from './MessageThread';
+
+export enum MessageStatus {
+    READ = 'read',
+    DELIVERED = 'delivered',
+    SENT = 'sent',
+}
 
 @Entity()
 export class Message extends BaseEntity {
@@ -14,4 +19,11 @@ export class Message extends BaseEntity {
 
     @ManyToOne(type => MessageThread)
     public thread: MessageThread;
+
+    @Column({
+        type: 'enum',
+        enum: MessageStatus,
+        default: MessageStatus.SENT,
+    })
+    public status: MessageStatus;
 }

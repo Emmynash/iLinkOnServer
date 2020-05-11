@@ -1,6 +1,5 @@
 import { Entity, Column, OneToMany, OneToOne } from 'typeorm';
 import { BaseEntity } from './BaseEntity';
-import { User } from './User';
 import { Group } from './Group';
 import { Message } from './Message';
 import { MessageThreadParticipant } from './MessageThreadParticipant';

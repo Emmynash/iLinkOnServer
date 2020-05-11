@@ -2,7 +2,6 @@ import { BaseContext } from 'koa';
 import HttpStatus from 'http-status';
 import { verify } from 'jsonwebtoken';
 import unless from 'koa-unless';
-import { User } from '@entities';
 import { config } from '@config';
 
 export const authHandler = (isTemp = false) => {

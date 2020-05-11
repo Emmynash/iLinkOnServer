@@ -1,12 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany, ManyToOne } from 'typeorm';
+import { Entity, Column, ManyToOne } from 'typeorm';
 import { IsDate } from 'class-validator';
+
 import { Event } from './Event';
+import { BaseEntity } from './BaseEntity';
 
 @Entity()
-export class EventDate {
-    @PrimaryGeneratedColumn()
-    id: number;
-
+export class EventDate extends BaseEntity {
     @Column()
     @IsDate()
     startDate: Date;
@@ -17,10 +16,4 @@ export class EventDate {
 
     @ManyToOne(type => Event, event => event.dates)
     public event: Event;
-
-    @CreateDateColumn()
-    public createdAt: Date;
-
-    @UpdateDateColumn()
-    public updatedAt: Date;
 }

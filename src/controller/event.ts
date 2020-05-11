@@ -1,5 +1,5 @@
 import { BaseContext } from 'koa';
-import { getManager, Repository, createConnection, Connection } from 'typeorm';
+import { getManager, Repository } from 'typeorm';
 import { validate, ValidationError } from 'class-validator';
 import {
   request,

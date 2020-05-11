@@ -1,11 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, BeforeInsert, BeforeUpdate } from 'typeorm';
+import { Entity, Column, BeforeInsert, BeforeUpdate } from 'typeorm';
 import { Length, IsOptional, IsUrl } from 'class-validator';
 import crypto from 'crypto';
+import { BaseEntity } from './BaseEntity';
 
 @Entity()
-export class School {
-    @PrimaryGeneratedColumn()
-    id: number;
+export class School extends BaseEntity {
 
     @Column({
         length: 255,
@@ -19,12 +18,6 @@ export class School {
     })
     @Length(2, 80)
     name: string;
-
-    @CreateDateColumn()
-    public createdAt: Date;
-
-    @UpdateDateColumn()
-    public updatedAt: Date;
 
     @BeforeInsert()
     @BeforeUpdate()

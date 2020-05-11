@@ -1,11 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { Length, IsPhoneNumber } from 'class-validator';
+
 import { config } from '@config';
+import { BaseEntity } from './BaseEntity';
 
 @Entity()
-export class OneTimePassword {
-    @PrimaryGeneratedColumn()
-    id: number;
+export class OneTimePassword extends BaseEntity {
 
     @Column({
         length: 14,
@@ -21,12 +21,6 @@ export class OneTimePassword {
     })
     @Length(config.OTPLength)
     otp: string;
-
-    @CreateDateColumn()
-    public createdAt: Date;
-
-    @UpdateDateColumn()
-    public updatedAt: Date;
 }
 
 export const otpSchema = {

@@ -33,12 +33,11 @@ export default class AuthController {
   })
   @responses(SampleResponses.GenerateOTP)
   public static async generateOTP(ctx: BaseContext, next: () => void) {
-    // get a OTP repository to perform operations with user
     const otpRepository: Repository<OneTimePassword> = getManager().getRepository(
       OneTimePassword
     );
 
-    let oneTimePassword: OneTimePassword = await otpRepository.findOne({
+    let oneTimePassword = await otpRepository.findOne({
       phone: ctx.request.body.phone,
     });
     if (!oneTimePassword) {

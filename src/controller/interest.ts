@@ -16,10 +16,8 @@ export default class UserController {
     @request('get', '/interests')
     @summary('Find all interests')
     public static async getInterests(ctx: BaseContext, next: () => void) {
-
         // get a interest repository to perform operations with interest
         const interestRepository: Repository<Interest> = getManager().getRepository(Interest);
-
         // load all interests
         const interests: Interest[] = await interestRepository.find();
 
