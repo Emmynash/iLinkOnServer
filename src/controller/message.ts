@@ -139,7 +139,6 @@ export default class AuthController {
                     where: {
                         participantId: ctx.state.user.id,
                     },
-                    relations: ['thread'],
                 });
                 let result: MessageThread = undefined;
                 if (userId) {
@@ -152,7 +151,7 @@ export default class AuthController {
                             },
                         });
                         if (query) {
-                            existingThread = userThreads[i].thread;
+                            existingThread = await userThreads[i].thread;
                             break;
                         }
                     }
