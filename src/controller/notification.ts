@@ -19,10 +19,10 @@ export default class NotificationController {
         try {
             const { token } = ctx.request.body as { token: string };
             const notificationService = new NotificationService(ctx.state.user);
-            await notificationService.registerToken(token);
+            const result = await notificationService.registerToken(token);
 
             ctx.status = httpStatus.CREATED;
-            ctx.state.data = {};
+            ctx.state.data = result;
         } catch (error) {
             ctx.status = httpStatus.BAD_REQUEST;
             ctx.state.message = error;

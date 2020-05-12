@@ -24,7 +24,8 @@
     "@shared": "dist/shared",
     "@middleware": "dist/middleware",
     "@interfaces": "dist/interface",
-    "@services": "dist/service"
+    "@services": "dist/service",
+    "@validators": "dist/validator"
   },
   "author": "Kator James",
   "license": "MIT",

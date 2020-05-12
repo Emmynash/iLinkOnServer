@@ -139,6 +139,7 @@ export default class AuthController {
                     where: {
                         participantId: ctx.state.user.id,
                     },
+                    relations: ['thread'],
                 });
                 let result: MessageThread = undefined;
                 if (userId) {
@@ -151,7 +152,7 @@ export default class AuthController {
                             },
                         });
                         if (query) {
-                            existingThread = await userThreads[i].thread;
+                            existingThread = userThreads[i].thread;
                             break;
                         }
                     }
@@ -164,16 +165,16 @@ export default class AuthController {
 
                         const firstParticipant = new MessageThreadParticipant();
                         firstParticipant.participantId = ctx.state.user;
-                        firstParticipant.thread = messageThread;
+                        firstParticipant.threadId = messageThread.id;
 
                         const secondParticipant = new MessageThreadParticipant();
                         secondParticipant.participantId = userId;
-                        secondParticipant.thread = messageThread;
+                        secondParticipant.threadId = messageThread.id;
                         const participants = await messageThreadParticipantRepository.save(
                             [firstParticipant, secondParticipant]
                         );
-                        messageThread.participants = participants;
                         result = messageThread;
+                        result.participants = participants;
                     }
                 } else {
                     let existingThread: MessageThread = undefined;
@@ -183,6 +184,7 @@ export default class AuthController {
                                 groupId: groupId,
                                 threadId: userThreads[i].threadId,
                             },
+                            relations: ['group']
                         });
                         if (query) {
                             existingThread = query;

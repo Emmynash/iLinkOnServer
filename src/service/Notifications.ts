@@ -28,12 +28,6 @@ export class NotificationService {
     }
 
     public async registerToken(token: string) {
-        const existingToken = await this.repository.find({
-            token,
-        });
-        if (existingToken) {
-            throw new Error('The token is already registered');
-        }
         const notification = new NotificationToken();
         notification.token = token;
         notification.user = this.user;
@@ -41,6 +35,13 @@ export class NotificationService {
         const errors = await validate(notification);
         if (errors.length > 0) {
             throw errors;
+        }
+
+        const existingToken = await this.repository.findOne({
+            token,
+        });
+        if (existingToken) {
+            throw new Error('The token is already registered');
         }
         const result = await this.repository.save(notification);
         return result;
@@ -52,17 +53,14 @@ export class NotificationService {
         return result;
     }
 
-    public async sendTo({ title, body }, user?: User, group?: Group): Promise<ISendResponse | undefined> {
-        const tokens = [];
-        if (user) {
-            const validTokens = await this.getUserTokens(user);
-            tokens.push(validTokens);
-        }
+    public async sendToUser({ title, body }, user?: User, group?: Group): Promise<ISendResponse | undefined> {
+        const tokens = await this.getUserTokens(user);
+        const result = await this.sendAndCleanUp({ title, body }, tokens);
+        return result;
+    }
 
-        if (group) {
-            const validTokens = await this.getGroupTokens(group.members);
-            tokens.push(validTokens);
-        }
+    public async sendToGroup({ title, body }, group?: Group): Promise<ISendResponse | undefined> {
+        const tokens = await this.getGroupTokens(group.members);
         const result = await this.sendAndCleanUp({ title, body }, tokens);
         return result;
     }

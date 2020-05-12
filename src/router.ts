@@ -19,6 +19,11 @@ router.swagger({
               in: 'header',
               name: 'TempAuthorization',
             },
+            ApiKeyAuth: {
+              type: 'apiKey',
+              in: 'header',
+              name: 'Token',
+            },
         },
     },
 });

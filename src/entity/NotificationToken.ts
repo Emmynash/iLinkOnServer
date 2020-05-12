@@ -1,4 +1,6 @@
+import { Validate } from 'class-validator';
 import { Entity, ManyToOne, Column, Index } from 'typeorm';
+import { ExpoTokenValidator } from '@validators';
 
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
@@ -11,6 +13,7 @@ export class NotificationToken extends BaseEntity {
     @ManyToOne(type => User)
     public user: User;
 
+    @Validate(ExpoTokenValidator)
     @Index()
     @Column('text', {
         unique: true,

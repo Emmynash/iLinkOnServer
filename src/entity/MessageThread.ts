@@ -22,7 +22,6 @@ export class MessageThread extends BaseEntity {
     @OneToOne(type => Group, group => group.messageThread, {
         onDelete: 'CASCADE',
         nullable: true,
-        eager: true,
     })
     public group: Group;
 }
