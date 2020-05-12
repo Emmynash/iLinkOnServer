@@ -25,7 +25,7 @@
     "@middleware": "dist/middleware",
     "@interfaces": "dist/interface",
     "@services": "dist/service",
-    "@validators": "dist/validator"
+    "@validators": "dist/validators"
   },
   "author": "Kator James",
   "license": "MIT",
