@@ -1,5 +1,5 @@
 import { BaseContext } from 'koa';
-import { getManager } from 'typeorm';
+import { getManager, getConnection } from 'typeorm';
 import {
     request,
     summary,
@@ -18,6 +18,7 @@ import {
     GroupMember,
     MessageThread,
     MessageThreadParticipant,
+    Group,
 } from '@entities';
 import { config } from '@config';
 import { authHandler } from '@middleware';
@@ -177,6 +178,11 @@ export default class AuthController {
                         result.participants = participants;
                     }
                 } else {
+                    const groupRepository = getConnection().getRepository(Group);
+                    const group = await groupRepository.findOne(+groupId || 0);
+                    if (!group) {
+                        throw new Error('Group does not exist');
+                    }
                     let existingThread: MessageThread = undefined;
                     for (let i = 0; i < userThreads.length; i++) {
                         const query = await messageThreadRepository.findOne({
@@ -184,7 +190,6 @@ export default class AuthController {
                                 groupId: groupId,
                                 threadId: userThreads[i].threadId,
                             },
-                            relations: ['group']
                         });
                         if (query) {
                             existingThread = query;
@@ -201,6 +206,7 @@ export default class AuthController {
                         );
                         result = messageThread;
                     }
+                    result.group = group;
                 }
                 ctx.status = HttpStatus.OK;
                 ctx.state.data = result || {};
