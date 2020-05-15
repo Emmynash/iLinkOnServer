@@ -1,4 +1,10 @@
-import { Entity, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  ManyToOne,
+  CreateDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { BaseEntity } from './BaseEntity';
 import { User } from './User';
 import { MessageThread } from './MessageThread';
@@ -28,4 +34,10 @@ export class Message extends BaseEntity {
     default: MessageStatus.SENT,
   })
   public status: MessageStatus;
+
+  @CreateDateColumn()
+  public createdAt: Date;
+
+  @UpdateDateColumn()
+  public updatedAt: Date;
 }
