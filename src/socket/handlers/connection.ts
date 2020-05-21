@@ -48,16 +48,10 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
         } else {
           // PM
           const participant = messageThread.participants.find(
-            (p) => p.id !== userId
+            (p) => p.participantId !== userId
           );
 
-          //   map.set(userId, ws);
-          map.set(participant.id, ws);
-
-          const receiverWs = map.get(participant.id);
-          //   console.log(userId);
-          //   console.log(participant.id);
-          //   console.log(receiverWs);
+          const receiverWs = map.get(participant.participantId);
 
           if (receiverWs) {
             const payload = {
