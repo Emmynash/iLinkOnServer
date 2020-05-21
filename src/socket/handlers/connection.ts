@@ -12,8 +12,6 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
 
   map.set(userId, ws);
 
-  console.log(userId);
-
   ws.on('message', async (msg: string) => {
     const { threadId, text } = JSON.parse(msg) as {
       threadId: number;
@@ -53,16 +51,20 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
             (p) => p.id !== userId
           );
 
-          map.set(participant.participantId, ws);
-          const receiverWs = map.get(participant.participantId);
+          //   map.set(userId, ws);
+          map.set(participant.id, ws);
+
+          const receiverWs = map.get(participant.id);
+          //   console.log(userId);
+          //   console.log(participant.id);
           //   console.log(receiverWs);
+
           if (receiverWs) {
             const payload = {
               thread: messageThread,
               message,
             };
             receiverWs.send(JSON.stringify(payload));
-            console.log(payload);
           } else {
             const notificationService = new NotificationService();
             const receiver = await participant.participant;
