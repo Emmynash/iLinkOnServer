@@ -12,7 +12,13 @@ import {
   orderAll,
   securityAll,
 } from 'koa-swagger-decorator';
-import { Event, EventRSVP, eventCommentSchema, EventComment } from '@entities';
+import {
+  Event,
+  EventRSVP,
+  eventCommentSchema,
+  EventComment,
+  EventDate,
+} from '@entities';
 import httpStatus = require('http-status');
 import { authHandler } from '@middleware';
 
@@ -57,11 +63,13 @@ export default class UserController {
     // get a event repository to perform operations with event
     const eventRepository = getManager().getRepository(Event);
     const eventCommentRepository = getManager().getRepository(EventComment);
+    const eventDateRepository = getManager().getRepository(EventDate);
 
-    // find the group by specified id
+    // find the event by specified id
     const event: Event = await eventRepository.findOne(
       +ctx.params.eventId || 0
     );
+
     if (!event) {
       // return a BAD REQUEST status code and error message
       ctx.status = httpStatus.NOT_FOUND;
@@ -69,6 +77,14 @@ export default class UserController {
     } else {
       // Get all event comments
       const comments = await eventCommentRepository.find({ event });
+      // find event date by specified event
+      const eventDate = await eventDateRepository.findOne({ event });
+
+      const currentDate = new Date();
+
+      if (currentDate > eventDate.endDate) {
+        event.isActive = false;
+      }
 
       comments.reverse();
 
