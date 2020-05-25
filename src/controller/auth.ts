@@ -65,7 +65,7 @@ export default class AuthController {
       const { otp, ...createdOtp } = await otpRepository.save(oneTimePassword);
       // return CREATED status code and updated OTP
       ctx.status = HttpStatus.CREATED;
-      ctx.state.data = createdOtp;
+      ctx.state.data = { createdOtp, otp };
       await next();
     }
   }
