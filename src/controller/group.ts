@@ -116,6 +116,7 @@ export default class GroupController {
     groupToBeSaved.name = ctx.request.body.name;
     groupToBeSaved.description = ctx.request.body.description;
     groupToBeSaved.interests = ctx.request.body.interests;
+    groupToBeSaved.school = ctx.request.body.school;
     groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto;
     groupToBeSaved.role = UserPerm.ADMIN;
 
