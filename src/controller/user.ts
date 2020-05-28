@@ -33,7 +33,7 @@ export default class UserController {
     const userRepository: Repository<User> = getManager().getRepository(User);
 
     // load all users
-    const users: User[] = await userRepository.find();
+    const users: User[] = await userRepository.find({ relations: ['school'] });
 
     // return OK status code and loaded users array
     ctx.status = httpStatus.OK;
@@ -51,7 +51,9 @@ export default class UserController {
     const userRepository: Repository<User> = getManager().getRepository(User);
 
     // load user by id
-    const user: User = await userRepository.findOne(+ctx.params.userId || 0);
+    const user: User = await userRepository.findOne(+ctx.params.userId || 0, {
+      relations: ['school'],
+    });
 
     if (user) {
       // return OK status code and loaded user object

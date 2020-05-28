@@ -22,6 +22,7 @@ import {
   eventSchema,
   Event,
   EventDate,
+  School,
 } from '@entities';
 import httpStatus from 'http-status';
 import { authHandler } from '@middleware';
@@ -60,6 +61,39 @@ export default class GroupController {
         group.isMember = false;
       }
     });
+
+    // reverse groups array
+    groups.reverse();
+
+    // return OK status code and loaded groups array
+    ctx.status = httpStatus.OK;
+    ctx.state.data = groups;
+    await next();
+  }
+
+  @request('get', '/groups/schools/{schoolId}')
+  @summary('Find all groups in schools')
+  @path({
+    schoolId: { type: 'number', required: true, description: 'School id' },
+  })
+  public static async getAllGroupsInSchool(ctx: BaseContext, next: () => void) {
+    // get a group repository to perform operations with group
+    const groupRepository: Repository<Group> = getManager().getRepository(
+      Group
+    );
+
+    // get a school repository to perform operations with school
+    const schoolRepository: Repository<School> = getManager().getRepository(
+      School
+    );
+
+    // load school by id
+    const school: School = await schoolRepository.findOne(
+      +ctx.params.schoolId || 0
+    );
+
+    // load all groups
+    const groups: Group[] = await groupRepository.find({ school: school.id });
 
     // reverse groups array
     groups.reverse();

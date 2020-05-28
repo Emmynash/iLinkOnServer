@@ -43,8 +43,8 @@ export class Group extends BaseEntity {
   @IsOptional()
   description: string;
 
-  @ManyToOne((type) => School)
-  school?: School;
+  @ManyToOne((type) => School, { lazy: true })
+  school?: Promise<School> | School | number;
 
   @Column({ type: 'numeric', array: true, default: '{}' })
   public interests: number[];

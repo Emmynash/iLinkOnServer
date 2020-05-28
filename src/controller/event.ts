@@ -117,12 +117,26 @@ export default class UserController {
     rsvp.event = event;
     rsvp.memberId = ctx.state.user.id;
 
+    const getRSVP = await eventRSVPRepository.find({ event });
+
+    const hasRSVPEvent = getRSVP.map((rsvp) => {
+      console.log(rsvp.user.id);
+      console.log(ctx.state.user.id);
+      if (rsvp.user.id === ctx.state.user.id) {
+        return true;
+      }
+    });
+
+    // console.log(getRSVP);
+    // console.log(ctx.state.user);
+    // console.log(hasRSVPEvent);
+
     if (!event) {
       // return a BAD REQUEST status code and error message
       ctx.status = httpStatus.NOT_FOUND;
       ctx.state.message = "The event you are trying to join doesn't exist";
       await next();
-    } else if (await eventRSVPRepository.findOne({ user: ctx.state.user })) {
+    } else if (hasRSVPEvent) {
       // return BAD REQUEST status code and user already joined error
       ctx.status = httpStatus.BAD_REQUEST;
       ctx.state.message = 'The specified user is already attending this event';
@@ -163,8 +177,8 @@ export default class UserController {
       ctx.state.message = "The event doesn't exist";
       await next();
     } else {
-      // Create an RSVP
-      const rsvps = await eventRSVPRepository.find({ relations: ['user'] });
+      // return an RSVP
+      const rsvps = await eventRSVPRepository.find({ event });
 
       rsvps.reverse();
 
