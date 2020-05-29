@@ -119,17 +119,9 @@ export default class UserController {
 
     const getRSVP = await eventRSVPRepository.find({ event });
 
-    const hasRSVPEvent = getRSVP.map((rsvp) => {
-      console.log(rsvp.user.id);
-      console.log(ctx.state.user.id);
-      if (rsvp.user.id === ctx.state.user.id) {
-        return true;
-      }
+    const hasRSVPEvent = getRSVP.find((rsvp) => {
+      return rsvp.user.phone === ctx.state.user.phone;
     });
-
-    // console.log(getRSVP);
-    // console.log(ctx.state.user);
-    // console.log(hasRSVPEvent);
 
     if (!event) {
       // return a BAD REQUEST status code and error message

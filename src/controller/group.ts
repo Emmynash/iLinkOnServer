@@ -23,6 +23,7 @@ import {
   Event,
   EventDate,
   School,
+  EventRSVP,
 } from '@entities';
 import httpStatus from 'http-status';
 import { authHandler } from '@middleware';
@@ -378,6 +379,9 @@ export default class GroupController {
     const eventRepository = getManager().getRepository(Event);
     const eventDateRepository = getManager().getRepository(EventDate);
     const groupMemberRepository = getManager().getRepository(GroupMember);
+    const eventRSVPRepository: Repository<EventRSVP> = getManager().getRepository(
+      EventRSVP
+    );
 
     // find the group by specified id
     const group: Group = await groupRepository.findOne(
@@ -417,6 +421,15 @@ export default class GroupController {
         eventDate = await eventDateRepository.save(eventDate);
         return eventDate;
       });
+
+      // Create an RSVP
+      const rsvp: EventRSVP = new EventRSVP();
+      rsvp.user = ctx.state.user;
+      rsvp.event = event;
+      rsvp.memberId = ctx.state.user.id;
+
+      await eventRSVPRepository.save(rsvp);
+
       ctx.status = httpStatus.OK;
       ctx.state.data = event;
     }

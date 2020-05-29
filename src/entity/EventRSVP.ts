@@ -17,7 +17,6 @@ export class EventRSVP {
 
   @ManyToOne((type) => User, {
     eager: true,
-    lazy: true,
   })
   public user: User;
 
