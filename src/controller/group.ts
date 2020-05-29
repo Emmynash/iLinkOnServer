@@ -176,6 +176,7 @@ export default class GroupController {
       groupMember.group = group;
       groupMember.role = UserRole.ADMIN;
       groupMember.approved = true;
+      groupMember.profilePhoto = ctx.state.user.profilePhoto;
       await groupMemberRepository.save(groupMember);
 
       // return CREATED status code and updated group
