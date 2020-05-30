@@ -18,7 +18,6 @@ import {
   Group,
   GroupMember,
   UserRole,
-  UserPerm,
   eventSchema,
   Event,
   EventDate,
@@ -58,6 +57,11 @@ export default class GroupController {
       });
       if (groupMember) {
         group.isMember = true;
+        if (groupMember.role === 'admin') {
+          group.role = 'admin';
+        } else {
+          group.role = 'member';
+        }
       } else {
         group.isMember = false;
       }
@@ -102,6 +106,11 @@ export default class GroupController {
       });
       if (groupMember) {
         group.isMember = true;
+        if (groupMember.role === 'admin') {
+          group.role = 'admin';
+        } else {
+          group.role = 'member';
+        }
       } else {
         group.isMember = false;
       }
@@ -164,7 +173,7 @@ export default class GroupController {
     groupToBeSaved.interests = ctx.request.body.interests;
     groupToBeSaved.school = ctx.request.body.school;
     groupToBeSaved.displayPhoto = ctx.request.body.displayPhoto;
-    groupToBeSaved.role = UserPerm.ADMIN;
+    // groupToBeSaved.role = UserPerm.ADMIN;
 
     // validate group entity
     const errors: ValidationError[] = await validate(groupToBeSaved); // errors is an array of validation errors

@@ -15,12 +15,6 @@ import { BaseEntity } from './BaseEntity';
 import { MessageThread } from './MessageThread';
 import { School } from './School';
 
-export enum UserPerm {
-  ADMIN = 'admin',
-  MEMBER = 'member',
-  GUEST = 'guest',
-}
-
 @Entity()
 export class Group extends BaseEntity {
   @Column({
@@ -67,8 +61,8 @@ export class Group extends BaseEntity {
   @Column({ default: false })
   public isPublic: boolean;
 
-  @Column({ type: 'enum', enum: UserPerm, default: UserPerm.MEMBER })
-  public role: UserPerm;
+  @Column({ nullable: true })
+  public role: string;
 
   @BeforeInsert()
   @BeforeUpdate()
