@@ -96,6 +96,17 @@ export default class GroupController {
     // load all groups
     const groups: Group[] = await groupRepository.find({ school: school.id });
 
+    groups.forEach((group) => {
+      const groupMember = group.members.find((member) => {
+        return member.memberId === ctx.state.user.id;
+      });
+      if (groupMember) {
+        group.isMember = true;
+      } else {
+        group.isMember = false;
+      }
+    });
+
     // reverse groups array
     groups.reverse();
 
