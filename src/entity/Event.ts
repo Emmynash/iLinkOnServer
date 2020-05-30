@@ -13,6 +13,7 @@ import { Group } from './Group';
 import { User } from './User';
 import { EventDate } from './EventDate';
 import { EventRSVP } from './EventRSVP';
+import { School } from './School';
 import { EventComment } from './EventComment';
 import { BaseEntity } from './BaseEntity';
 
@@ -62,6 +63,9 @@ export class Event extends BaseEntity {
   @ManyToOne((type) => User)
   @JoinColumn()
   public createdBy: User;
+
+  @ManyToOne((type) => School, { lazy: true })
+  school?: Promise<School> | School | number;
 
   @Column({ default: false })
   public deleted: boolean;

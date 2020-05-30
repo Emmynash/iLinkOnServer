@@ -86,17 +86,14 @@ export default class GroupController {
     const groupRepository: Repository<Group> = getManager().getRepository(
       Group
     );
-
     // get a school repository to perform operations with school
     const schoolRepository: Repository<School> = getManager().getRepository(
       School
     );
-
     // load school by id
     const school: School = await schoolRepository.findOne(
       +ctx.params.schoolId || 0
     );
-
     // load all groups
     const groups: Group[] = await groupRepository.find({ school: school.id });
 
@@ -431,6 +428,7 @@ export default class GroupController {
       event.group = group;
       event.description = ctx.request.body.description;
       event.createdBy = ctx.state.user;
+      event.school = ctx.state.user.school;
       event = await eventRepository.save(event);
 
       // Create event dates
