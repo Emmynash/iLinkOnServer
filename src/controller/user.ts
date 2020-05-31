@@ -33,7 +33,7 @@ export default class UserController {
     const userRepository: Repository<User> = getManager().getRepository(User);
 
     // load all users
-    const users: User[] = await userRepository.find({ relations: ['school'] });
+    const users: User[] = await userRepository.find();
 
     // return OK status code and loaded users array
     ctx.status = httpStatus.OK;
