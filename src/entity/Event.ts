@@ -64,7 +64,7 @@ export class Event extends BaseEntity {
   @JoinColumn()
   public createdBy: User;
 
-  @ManyToOne((type) => School, { lazy: true })
+  @ManyToOne((type) => School, { eager: true, lazy: true })
   school?: Promise<School> | School | number;
 
   @Column({ default: false })

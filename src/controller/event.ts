@@ -44,7 +44,7 @@ export default class UserController {
 
     // load all events
     const events: Event[] = await eventRepository.find({
-      school: ctx.state.user.school.id,
+      school: ctx.state.user.school,
     });
     console.log(ctx.state.user);
     // reverse events array
