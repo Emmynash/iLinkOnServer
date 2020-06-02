@@ -55,7 +55,6 @@ export class User extends BaseEntity {
     length: 100,
   })
   @Length(8, 100)
-  @IsEmail()
   @IsOptional()
   email?: string;
 
