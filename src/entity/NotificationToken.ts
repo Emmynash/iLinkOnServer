@@ -14,10 +14,10 @@ export class NotificationToken extends BaseEntity {
   public user: User;
 
   @Validate(ExpoTokenValidator)
-  @IsString()
   @Index()
-  @Column({
+  @Column('text', {
     unique: true,
+    nullable: true,
   })
   public token: string;
 }
