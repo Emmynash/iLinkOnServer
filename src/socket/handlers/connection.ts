@@ -52,6 +52,8 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
             return result;
           });
 
+          console.log(participant);
+
           const receiverWs = map.get(participant.participantId);
 
           if (receiverWs) {
