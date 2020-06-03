@@ -47,9 +47,10 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
           await notificationService.sendToGroup(notification, group);
         } else {
           // PM
-          const participant = messageThread.participants.find(
-            (p) => p.participantId !== userId
-          );
+          const participant = messageThread.participants.find((p) => {
+            const result = p.participantId !== userId;
+            return result;
+          });
 
           const receiverWs = map.get(participant.participantId);
 

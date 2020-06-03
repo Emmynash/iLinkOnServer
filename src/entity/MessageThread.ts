@@ -19,7 +19,6 @@ export class MessageThread extends BaseEntity {
     (participant) => participant.thread,
     {
       eager: true,
-      lazy: true,
     }
   )
   public participants: MessageThreadParticipant[];
