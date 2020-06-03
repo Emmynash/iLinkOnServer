@@ -14,6 +14,6 @@ export class MessageThreadParticipant extends BaseEntity {
   @ManyToOne((type) => MessageThread, (thread) => thread.participants)
   public thread: MessageThread;
 
-  @ManyToOne((type) => User)
+  @ManyToOne((type) => User, { eager: true })
   participant: User;
 }

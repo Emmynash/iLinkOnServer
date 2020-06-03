@@ -40,7 +40,7 @@ export class NotificationService {
     notification.user = this.user;
 
     const errors: ValidationError[] = await validate(notification);
-    if (errors.length > 0 || !Expo.isExpoPushToken(token)) {
+    if (errors.length > 0) {
       console.log(
         `error occured ${errors}, Push token ${token} is not a valid Expo push token`
       );

@@ -15,8 +15,8 @@ export class NotificationToken extends BaseEntity {
 
   // @Validate(ExpoTokenValidator)
   @IsString()
-  @Index()
-  @Column('text', {
+  // @Index()
+  @Column({
     unique: true,
   })
   public token: string;

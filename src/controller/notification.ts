@@ -10,6 +10,8 @@ import {
   body,
 } from 'koa-swagger-decorator';
 
+import { NotificationToken } from '@entities';
+import { Expo } from 'expo-server-sdk';
 import { NotificationService } from '@services';
 import { authHandler } from '@middleware';
 
@@ -27,15 +29,14 @@ export default class NotificationController {
     try {
       const { token } = ctx.request.body as { token: string };
       const notificationService = new NotificationService(ctx.state.user);
-      const result = await notificationService.registerToken(token);
 
-      //   console.log(result);
+      const result = await notificationService.registerToken(token);
 
       ctx.status = httpStatus.CREATED;
       ctx.state.data = result;
     } catch (error) {
       ctx.status = httpStatus.BAD_REQUEST;
-      ctx.state.message = `error occured ${error}, or Push token is not a valid Expo push token`;
+      ctx.state.message = `error occured ${error}`;
     }
     await next();
   }
