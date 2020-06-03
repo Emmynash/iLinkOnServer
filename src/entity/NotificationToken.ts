@@ -13,9 +13,9 @@ export class NotificationToken extends BaseEntity {
   @ManyToOne((type) => User)
   public user: User;
 
-  // @Validate(ExpoTokenValidator)
+  @Validate(ExpoTokenValidator)
   @IsString()
-  // @Index()
+  @Index()
   @Column({
     unique: true,
   })
