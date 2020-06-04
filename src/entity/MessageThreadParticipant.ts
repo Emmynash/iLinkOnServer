@@ -8,6 +8,21 @@ export class MessageThreadParticipant extends BaseEntity {
   @Column()
   public participantId: number;
 
+  @Column({
+    nullable: true,
+  })
+  secondParticipantId: number;
+
+  @Column({
+    nullable: true,
+  })
+  secondParticipantfName: string;
+
+  @Column({
+    nullable: true,
+  })
+  secondParticipantProfilepic: string;
+
   @Column()
   public threadId: number;
 

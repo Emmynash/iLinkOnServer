@@ -75,12 +75,21 @@ export default class AuthController {
   public static async getUserMessageThread(ctx: BaseContext, next: () => void) {
     const user: User = ctx.state.user;
     // get a messagethread repository to perform operations with event
-    const messageThreadRepository: Repository<MessageThread> = getManager().getRepository(
-      MessageThread
+    const messageThreadParticipantRepository: Repository<MessageThreadParticipant> = getManager().getRepository(
+      MessageThreadParticipant
     );
 
-    // load all messagethread
-    const messages: MessageThread[] = await messageThreadRepository.find({});
+    // load logeed in user messagethread
+    const messages: MessageThreadParticipant[] = await messageThreadParticipantRepository
+      .createQueryBuilder('messageThreadParticipant')
+      .where('messageThreadParticipant.participantId = :userId', {
+        userId: user.id,
+      })
+      .orWhere('messageThreadParticipant.secondParticipantId = :userId', {
+        userId: user.id,
+      })
+      .orderBy('messageThreadParticipant.updatedAt', 'DESC')
+      .getMany();
 
     // return OK status code and loaded messagethread array
     ctx.status = HttpStatus.OK;
@@ -184,9 +193,19 @@ export default class AuthController {
             const messageThread = new MessageThread();
             await messageThreadRepository.save(messageThread);
 
+            // get a user repository to perform operations with user
+            const userRepository: Repository<User> = getManager().getRepository(
+              User
+            );
+            // load second participant by id
+            const user: User = await userRepository.findOne(userId);
+
             const firstParticipant = new MessageThreadParticipant();
             firstParticipant.participantId = ctx.state.user;
             firstParticipant.threadId = messageThread.id;
+            firstParticipant.secondParticipantId = user.id;
+            firstParticipant.secondParticipantfName = user.fName;
+            firstParticipant.secondParticipantProfilepic = user.profilePhoto;
 
             const secondParticipant = new MessageThreadParticipant();
             secondParticipant.participantId = userId;
