@@ -59,6 +59,11 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
               thread: messageThread,
               message,
             };
+
+            const sender = payload.message.sender;
+            const text = payload.message.text;
+
+            console.log(sender, text);
             receiverWs.send(JSON.stringify(payload));
           } else {
             const notificationService = new NotificationService();

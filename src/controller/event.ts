@@ -41,12 +41,26 @@ export default class UserController {
     const eventRepository: Repository<Event> = getManager().getRepository(
       Event
     );
+    const eventDateRepository = getManager().getRepository(EventDate);
 
     // load all events
     const events: Event[] = await eventRepository.find({
       school: ctx.state.user.school,
     });
-    console.log(ctx.state.user);
+
+    events.forEach(async (event) => {
+      // find event date by specified event
+      const eventDate = event.dates.find((date) => {
+        return date.endDate;
+      });
+
+      console.log(eventDate);
+      const currentDate = new Date();
+      if (currentDate > eventDate.endDate) {
+        event.isActive = false;
+      }
+    });
+
     // reverse events array
     events.reverse();
 
