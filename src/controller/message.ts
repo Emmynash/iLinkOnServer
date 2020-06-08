@@ -210,6 +210,10 @@ export default class AuthController {
             const secondParticipant = new MessageThreadParticipant();
             secondParticipant.participantId = userId;
             secondParticipant.threadId = messageThread.id;
+            secondParticipant.secondParticipantfName = ctx.state.user.fName;
+            secondParticipant.secondParticipantProfilepic =
+              ctx.state.user.profilePhoto;
+            secondParticipant.secondParticipantId = ctx.state.user.id;
             const participants = await messageThreadParticipantRepository.save([
               firstParticipant,
               secondParticipant,
