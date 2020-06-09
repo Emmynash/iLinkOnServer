@@ -68,6 +68,7 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
           } else {
             const notificationService = new NotificationService();
             const receiver = await participant.participant;
+
             await notificationService.sendToUser(notification, receiver);
           }
         }

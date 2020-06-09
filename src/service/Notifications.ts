@@ -70,6 +70,7 @@ export class NotificationService {
   ): Promise<ISendResponse | undefined> {
     const tokens = await this.getUserTokens(user);
     const result = await this.sendAndCleanUp({ title, body }, tokens);
+    console.log(tokens);
     return result;
   }
 
@@ -136,14 +137,14 @@ export class NotificationService {
     const recordedTokens = await this.repository.find();
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        if (Expo.isExpoPushToken(recordedToken.token)) {
-          collection.push(recordedToken);
-        }
+        collection.push(recordedToken);
+        // if (Expo.isExpoPushToken(recordedToken.token)) {
+        //   collection.push(recordedToken);
+        // }
         return collection;
       },
       []
     );
-
     return validTokens;
   }
 
@@ -153,14 +154,16 @@ export class NotificationService {
     });
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        if (Expo.isExpoPushToken(recordedToken.token)) {
-          collection.push(recordedToken);
-        }
+        collection.push(recordedToken);
+
+        // if (Expo.isExpoPushToken(recordedToken.token)) {
+        //   collection.push(recordedToken);
+        // }
         return collection;
       },
       []
     );
-
+    console.log(validTokens);
     return validTokens;
   }
 
@@ -175,9 +178,10 @@ export class NotificationService {
     });
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        if (Expo.isExpoPushToken(recordedToken.token)) {
-          collection.push(recordedToken);
-        }
+        collection.push(recordedToken);
+        // if (Expo.isExpoPushToken(recordedToken.token)) {
+        //   collection.push(recordedToken);
+        // }
         return collection;
       },
       []
