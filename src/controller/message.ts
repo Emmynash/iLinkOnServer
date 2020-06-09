@@ -91,13 +91,13 @@ export default class AuthController {
       .orderBy('messageThreadParticipant.updatedAt', 'DESC')
       .getMany();
 
-    messages.filter((message) => {
-      return message.secondParticipantId !== ctx.state.user.id;
+    const data = messages.filter((message) => {
+      return message.secondParticipantfName !== ctx.state.user.fName;
     });
 
     // return OK status code and loaded messagethread array
     ctx.status = HttpStatus.OK;
-    ctx.state.data = messages;
+    ctx.state.data = data;
     await next();
   }
 
