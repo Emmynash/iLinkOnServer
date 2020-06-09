@@ -41,7 +41,6 @@ export default class UserController {
     const eventRepository: Repository<Event> = getManager().getRepository(
       Event
     );
-    const eventDateRepository = getManager().getRepository(EventDate);
 
     // load all events
     const events: Event[] = await eventRepository.find({
