@@ -91,6 +91,10 @@ export default class AuthController {
       .orderBy('messageThreadParticipant.updatedAt', 'DESC')
       .getMany();
 
+    messages.filter((message) => {
+      return message.secondParticipantId !== ctx.state.user.id;
+    });
+
     // return OK status code and loaded messagethread array
     ctx.status = HttpStatus.OK;
     ctx.state.data = messages;
