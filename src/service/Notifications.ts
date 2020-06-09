@@ -70,6 +70,7 @@ export class NotificationService {
   ): Promise<ISendResponse | undefined> {
     const tokens = await this.getUserTokens(user);
     const result = await this.sendAndCleanUp({ title, body }, tokens);
+    console.log(result);
     return result;
   }
 
