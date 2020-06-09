@@ -54,7 +54,6 @@ export default class UserController {
         return date.endDate;
       });
 
-      console.log(eventDate);
       const currentDate = new Date();
       if (currentDate > eventDate.endDate) {
         event.isActive = false;
