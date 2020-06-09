@@ -69,6 +69,7 @@ export class NotificationService {
     group?: Group
   ): Promise<ISendResponse | undefined> {
     const tokens = await this.getUserTokens(user);
+    console.log(tokens);
     const result = await this.sendAndCleanUp({ title, body }, tokens);
     console.log(result);
     return result;
@@ -163,7 +164,6 @@ export class NotificationService {
       },
       []
     );
-    console.log(validTokens);
     return validTokens;
   }
 
