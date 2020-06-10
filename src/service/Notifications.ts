@@ -80,7 +80,9 @@ export class NotificationService {
     group?: Group
   ): Promise<ISendResponse | undefined> {
     const tokens = await this.getGroupTokens(group.members);
+    console.log(tokens);
     const result = await this.sendAndCleanUp({ title, body }, tokens);
+    console.log(result);
     return result;
   }
 
