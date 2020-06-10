@@ -140,10 +140,9 @@ export class NotificationService {
     const recordedTokens = await this.repository.find();
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        collection.push(recordedToken);
-        // if (Expo.isExpoPushToken(recordedToken.token)) {
-        //   collection.push(recordedToken);
-        // }
+        if (Expo.isExpoPushToken(recordedToken.token)) {
+          collection.push(recordedToken);
+        }
         return collection;
       },
       []
@@ -157,11 +156,9 @@ export class NotificationService {
     });
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        collection.push(recordedToken);
-
-        // if (Expo.isExpoPushToken(recordedToken.token)) {
-        //   collection.push(recordedToken);
-        // }
+        if (Expo.isExpoPushToken(recordedToken.token)) {
+          collection.push(recordedToken);
+        }
         return collection;
       },
       []
@@ -180,10 +177,9 @@ export class NotificationService {
     });
     const validTokens = recordedTokens.reduce(
       (collection: NotificationToken[], recordedToken) => {
-        collection.push(recordedToken);
-        // if (Expo.isExpoPushToken(recordedToken.token)) {
-        //   collection.push(recordedToken);
-        // }
+        if (Expo.isExpoPushToken(recordedToken.token)) {
+          collection.push(recordedToken);
+        }
         return collection;
       },
       []
@@ -351,7 +347,6 @@ export class NotificationService {
     for (const chunk of chunks) {
       try {
         const results = await this.expo.sendPushNotificationsAsync(chunk);
-        console.log(results);
         tickets.push(
           ...results.map((result, index) => ({
             ...result,

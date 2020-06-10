@@ -17,7 +17,6 @@ export class NotificationToken extends BaseEntity {
   @Index()
   @Column('text', {
     unique: true,
-    nullable: true,
   })
   public token: string;
 }

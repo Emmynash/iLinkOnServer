@@ -29,7 +29,7 @@ export default class NotificationController {
     try {
       const { token } = ctx.request.body as { token: string };
       const notificationService = new NotificationService(ctx.state.user);
-
+      console.log(token);
       const result = await notificationService.registerToken(token);
 
       ctx.status = httpStatus.CREATED;
