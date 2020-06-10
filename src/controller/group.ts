@@ -95,7 +95,9 @@ export default class GroupController {
       ctx.state.user.school || +ctx.params.schoolId
     );
     // load all groups
-    const groups: Group[] = await groupRepository.find({ school: school.id });
+    const groups: Group[] = await groupRepository.find({
+      school: school || ctx.state.user.school,
+    });
 
     groups.forEach((group) => {
       const groupMember = group.members.find((member) => {
