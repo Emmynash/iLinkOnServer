@@ -357,7 +357,7 @@ export class NotificationService {
         throw error;
       }
     }
-
+    console.log(tickets);
     return tickets;
   }
 }
