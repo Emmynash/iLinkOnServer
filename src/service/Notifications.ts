@@ -349,6 +349,7 @@ export class NotificationService {
     for (const chunk of chunks) {
       try {
         const results = await this.expo.sendPushNotificationsAsync(chunk);
+        console.log(results);
         tickets.push(
           ...results.map((result, index) => ({
             ...result,

@@ -92,7 +92,7 @@ export default class GroupController {
     );
     // load school by id
     const school: School = await schoolRepository.findOne(
-      +ctx.params.schoolId || ctx.state.user.school
+      ctx.state.user.school || +ctx.params.schoolId
     );
     // load all groups
     const groups: Group[] = await groupRepository.find({ school: school.id });
