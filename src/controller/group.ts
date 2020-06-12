@@ -420,7 +420,7 @@ export default class GroupController {
       }))
     ) {
       ctx.status = httpStatus.BAD_REQUEST;
-      ctx.state.message = 'Only a group admin can create and event for a group';
+      ctx.state.message = 'Only a group admin can create an event for a group';
     } else {
       // Create an event
       let event = new Event();
