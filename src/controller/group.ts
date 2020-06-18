@@ -448,7 +448,7 @@ export default class GroupController {
       if (startDate === currentDate || currentDate > startDate) {
         ctx.status = httpStatus.BAD_REQUEST;
         ctx.state.message =
-          'The event start date must be greater than the current date';
+          'The event start date and time must be greater than the current date and time';
       } else if (startDateTime === currentTime) {
         ctx.status = httpStatus.BAD_REQUEST;
         ctx.state.message =
