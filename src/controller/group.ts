@@ -431,28 +431,55 @@ export default class GroupController {
       event.description = ctx.request.body.description;
       event.createdBy = ctx.state.user;
       event.school = ctx.state.user.school;
-      event = await eventRepository.save(event);
+
+      let startDate = undefined;
+      let endDate = undefined;
 
       // Create event dates
-      const eventDates = ctx.request.body.dates.map(async (date) => {
-        let eventDate = new EventDate();
-        eventDate.startDate = new Date(date.startDate);
-        eventDate.endDate = new Date(date.endDate || date.startDate);
-        eventDate.event = event;
-        eventDate = await eventDateRepository.save(eventDate);
-        return eventDate;
+      const eventDate = ctx.request.body.dates.map((date) => {
+        startDate = new Date(date.startDate);
+        endDate = new Date(date.endDate || date.startDate);
       });
 
-      // Create an RSVP
-      const rsvp: EventRSVP = new EventRSVP();
-      rsvp.user = ctx.state.user;
-      rsvp.event = event;
-      rsvp.memberId = ctx.state.user.id;
+      const currentDate = new Date();
+      const currentTime = currentDate.getTime();
+      const endDateTime = endDate.getTime();
+      const startDateTime = startDate.getTime();
+      if (startDate === currentDate || currentDate > startDate) {
+        ctx.status = httpStatus.BAD_REQUEST;
+        ctx.state.message =
+          'The event start date must be greater than the current date';
+      } else if (startDateTime === currentTime) {
+        ctx.status = httpStatus.BAD_REQUEST;
+        ctx.state.message =
+          'The event start time must be greater than the current time';
+      } else if (startDate > endDate || startDate === endDate) {
+        ctx.status = httpStatus.BAD_REQUEST;
+        ctx.state.message =
+          'The event end date and time must be greater than the start date';
+      } else if (endDateTime === startDateTime) {
+        ctx.status = httpStatus.BAD_REQUEST;
+        ctx.state.message =
+          'The event start time must be greater than the end time';
+      } else {
+        // Create an RSVP
+        const rsvp: EventRSVP = new EventRSVP();
+        rsvp.user = ctx.state.user;
+        rsvp.event = event;
+        rsvp.memberId = ctx.state.user.id;
 
-      await eventRSVPRepository.save(rsvp);
+        let eventDate = new EventDate();
+        eventDate.startDate = startDate;
+        eventDate.endDate = endDate;
 
-      ctx.status = httpStatus.OK;
-      ctx.state.data = event;
+        event = await eventRepository.save(event);
+        eventDate.event = event;
+        eventDate = await eventDateRepository.save(eventDate);
+        await eventRSVPRepository.save(rsvp);
+
+        ctx.status = httpStatus.CREATED;
+        ctx.state.data = event;
+      }
     }
     await next();
   }
