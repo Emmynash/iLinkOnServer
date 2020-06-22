@@ -32,7 +32,7 @@ export const otpSchema = {
   otp: {
     type: 'string',
     required: true,
-    example: '1234',
+    example: '0123',
     description: 'OTP sent',
   },
 };
