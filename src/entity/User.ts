@@ -47,7 +47,7 @@ export class User extends BaseEntity {
   @Column({
     length: 80,
   })
-  @Length(2, 80)
+  @Length(0, 80)
   @IsOptional()
   mName?: string;
 
