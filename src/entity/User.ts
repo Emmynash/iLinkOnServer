@@ -111,9 +111,9 @@ export const userSchema = {
       'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
   },
   fName: { type: 'string', required: true, example: 'Kator' },
-  mName: { type: 'string', required: false, example: 'Bryan' },
+  mName: { type: 'string', required: false, example: 'Akita' },
   lName: { type: 'string', required: true, example: 'James' },
-  email: { type: 'string', required: false, example: 'kator95@gmail.com' },
+  email: { type: 'string', required: false, example: 'e.akita91@gmail.com' },
   interests: {
     type: 'array',
     required: false,

@@ -97,14 +97,14 @@ export default class AuthController {
       if (user) {
         response['user'] = user;
         response['token'] = sign({ user }, config.jwtSecret, {
-          expiresIn: '24000h',
+          expiresIn: '48000h',
         });
       } else {
         response['new_user'] = true;
         response['token'] = sign(
           { phone: ctx.request.body.phone },
           config.jwtSecret,
-          { expiresIn: '1h' }
+          { expiresIn: '2h' }
         );
       }
       // delete the OTP contained in the POST body
