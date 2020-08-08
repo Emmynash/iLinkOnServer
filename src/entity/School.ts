@@ -6,7 +6,7 @@ import { BaseEntity } from './BaseEntity';
 @Entity()
 export class School extends BaseEntity {
   @Column({
-    length: 256,
+    length: 255,
   })
   @IsOptional()
   @IsUrl()
