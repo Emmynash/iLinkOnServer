@@ -106,7 +106,7 @@ export class User extends BaseEntity {
 export const userSchema = {
   profilePhoto: {
     type: 'string',
-    required: true,
+    required: false,
     example:
       'https://gravatar.com/avatar/02bf38fddbfe9f82b94203336f9ebc41?s=200&d=retro',
   },
