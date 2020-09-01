@@ -44,7 +44,7 @@ const config: IConfig = {
   cronJobExpression: '0 * * * *',
   twilioAccountSid: process.env.TWILIO_ACCOUNT_SID || '',
   twilioToken: process.env.TWILIO_AUTH_TOKEN || '',
-  twilioSender: process.env.TWILIO_FROM || '',
+  twilioSender: process.env.TWILIO_FROM || 'iLinkOn',
   OTPLength: +(process.env.OTP_LENGTH || 4),
   presentationalDomain: process.env.PRESENTATIONAL_DOMAIN || 'ilinkon.com',
 

@@ -505,6 +505,19 @@ export default class GroupController {
     } else {
       // Create an event
       const events = await eventRepository.find({ group });
+
+      events.forEach(async (event) => {
+        // find event date by specified event
+        const eventDate = event.dates.find((date) => {
+          return date.endDate;
+        });
+
+        const currentDate = new Date();
+        if (currentDate > eventDate.endDate) {
+          event.isActive = false;
+        }
+      });
+
       ctx.status = httpStatus.OK;
       ctx.state.data = events;
     }
