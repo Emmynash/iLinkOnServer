@@ -13,66 +13,91 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
   map.set(userId, ws);
 
   ws.on('message', async (msg: string) => {
-    const { threadId, text } = JSON.parse(msg) as {
-      threadId: number;
-      text: string;
-    };
-    console.log(`Received message ${threadId}:${text} from user ${userId}`);
-    if (threadId && text) {
-      const messageRepository = getManager().getRepository(Message);
-      const messageThreadRepository = getManager().getRepository(MessageThread);
-      const messageThread = await messageThreadRepository.findOne(
-        +threadId || 0
-      );
-      const notification = {
-        title: `${request.user.fName} ${request.user.lName}`,
-        body: text,
+    try {
+      const { threadId, text, audio, image, file, messageType } = JSON.parse(
+        msg
+      ) as {
+        threadId: number;
+        text: string;
+        audio: string;
+        image: string;
+        file: string;
+        messageType: any;
       };
-      if (messageThread) {
-        const message = new Message();
-        message.sender = request.user;
-        message.thread = messageThread;
-        message.text = text;
+      console.log(`Received message ${threadId}:${text} from user ${userId}`);
+      if (threadId && text) {
+        const messageRepository = getManager().getRepository(Message);
+        const messageThreadRepository = getManager().getRepository(
+          MessageThread
+        );
+        const messageThread = await messageThreadRepository.findOne(
+          +threadId || 0
+        );
+        const notification = {
+          title: `${request.user.fName} ${request.user.lName}`,
+          body: text,
+        };
+        if (messageThread) {
+          const message = new Message();
+          message.sender = request.user;
+          message.thread = messageThread;
+          message.text = text;
+          message.audio = audio;
+          message.file = file;
+          message.image = image;
+          message.messageType = messageType;
 
-        // Save message to db
-        await messageRepository.save(message);
-        messageThread.updatedAt = new Date();
-        await messageThreadRepository.save(messageThread);
+          // Save message to db
+          await messageRepository.save(message);
+          messageThread.updatedAt = new Date();
+          await messageThreadRepository.save(messageThread);
 
-        if (messageThread.groupId) {
-          // Group Message
-          const groupService = new GroupService();
-          const group = await groupService.getGroup(messageThread.groupId);
-          const notificationService = new NotificationService();
-          await notificationService.sendToGroup(notification, group);
-        } else {
-          // PM
-          const participant = messageThread.participants.find((p) => {
-            const result = p.participantId !== userId;
-            return result;
-          });
-
-          const receiverWs = map.get(participant.participantId);
-
-          if (receiverWs) {
-            const payload = {
-              thread: messageThread,
-              message,
-            };
-
-            const sender = payload.message.sender;
-            const text = payload.message.text;
-
-            console.log(sender, text);
-            receiverWs.send(JSON.stringify(payload));
-          } else {
+          if (messageThread.groupId) {
+            // Group Message
+            const groupService = new GroupService();
+            const group = await groupService.getGroup(messageThread.groupId);
             const notificationService = new NotificationService();
-            const receiver = await participant.participant;
+            await notificationService.sendToGroup(notification, group);
+          } else {
+            // PM
+            const participant = messageThread.participants.find((p) => {
+              const result = p.participantId !== userId;
+              return Object.values(result);
+            });
 
-            await notificationService.sendToUser(notification, receiver);
+            const receiverWs = map.get(participant.participantId);
+            console.log('Return receiverWs', receiverWs);
+
+            if (receiverWs) {
+              const payload = {
+                thread: messageThread,
+                message,
+              };
+
+              const sender = payload.message.sender;
+              const text = payload.message.text;
+              const audio = payload.message.audio;
+              const image = payload.message.image;
+              const file = payload.message.file;
+              const messageType = payload.message.messageType;
+
+              console.log(sender, text, audio, image, file, messageType);
+              receiverWs.send(JSON.stringify(payload));
+            } else {
+              try {
+                const notificationService = new NotificationService();
+                const receiver = await participant.participant;
+
+                await notificationService.sendToUser(notification, receiver);
+              } catch (error) {
+                console.log('err', error);
+              }
+            }
           }
         }
       }
+    } catch (error) {
+      console.log('Error occured', error);
     }
   });
   ws.on('close', () => {
