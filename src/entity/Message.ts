@@ -25,19 +25,19 @@ export enum MessageType {
 
 @Entity()
 export class Message extends BaseEntity {
-  @Column({ default: null || undefined })
+  @Column({ default: '' })
   @IsOptional()
   public text: string;
 
-  @Column({ default: null || undefined })
+  @Column({ default: '' })
   @IsOptional()
   public audio: string;
 
-  @Column({ default: null || undefined })
+  @Column({ default: '' })
   @IsOptional()
   public image: string;
 
-  @Column({ default: null || undefined })
+  @Column({ default: '' })
   @IsOptional()
   public file: string;
 
