@@ -41,6 +41,10 @@ export class Message extends BaseEntity {
   @IsOptional()
   public file: string;
 
+  @Column({ default: '' })
+  @IsOptional()
+  public fileName: string;
+
   @ManyToOne((type) => User, (user) => user.sentMessages, {
     eager: true,
   })
