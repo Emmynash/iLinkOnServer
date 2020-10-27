@@ -23,11 +23,15 @@ export enum MessageType {
   TEXT = 'text',
 }
 
-@Entity()
+@Entity({ name: 'message' })
 export class Message extends BaseEntity {
   @Column({ default: '' })
   @IsOptional()
   public text: string;
+
+  @Column({ default: 'Pdf File' })
+  @IsOptional()
+  public fileName: string;
 
   @Column({ default: '' })
   @IsOptional()
@@ -40,10 +44,6 @@ export class Message extends BaseEntity {
   @Column({ default: '' })
   @IsOptional()
   public file: string;
-
-  @Column({ default: '' })
-  @IsOptional()
-  public fileName: string;
 
   @ManyToOne((type) => User, (user) => user.sentMessages, {
     eager: true,
