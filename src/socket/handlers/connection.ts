@@ -14,14 +14,21 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
 
   ws.on('message', async (msg: string) => {
     try {
-      const { threadId, text, audio, image, file, messageType } = JSON.parse(
-        msg
-      ) as {
+      const {
+        threadId,
+        text,
+        audio,
+        image,
+        file,
+        fileName,
+        messageType,
+      } = JSON.parse(msg) as {
         threadId: number;
         text: string;
         audio: string;
         image: string;
         file: string;
+        fileName: string;
         messageType: any;
       };
       console.log(`Received message ${threadId}:${text} from user ${userId}`);
@@ -44,6 +51,7 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
           message.text = text;
           message.audio = audio;
           message.file = file;
+          message.fileName = fileName;
           message.image = image;
           message.messageType = messageType;
 
