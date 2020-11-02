@@ -70,11 +70,10 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
             // PM
             const participant = messageThread.participants.find((p) => {
               const result = p.participantId !== userId;
-              return Object.values(result);
+              return result;
             });
 
             const receiverWs = map.get(participant.participantId);
-            console.log('Return receiverWs', receiverWs);
 
             if (receiverWs) {
               const payload = {
