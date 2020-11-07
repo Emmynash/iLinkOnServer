@@ -29,7 +29,7 @@ export class Message extends BaseEntity {
   @IsOptional()
   public text: string;
 
-  @Column({ default: 'Pdf File' })
+  @Column({ default: 'Pdf doc' })
   @IsOptional()
   public fileName: string;
 
