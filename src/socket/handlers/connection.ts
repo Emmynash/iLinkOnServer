@@ -31,7 +31,11 @@ export const handleConnection = (ws: WebSocket, request: IWsRequest) => {
         fileName: string;
         messageType: any;
       };
-      console.log(`Received message ${threadId}:${text} from user ${userId}`);
+      console.log(
+        `Received message ${threadId}:${
+          text || file || audio || image
+        } from user ${userId}`
+      );
       if ((threadId && text) || image || file || audio) {
         const messageRepository = getManager().getRepository(Message);
         const messageThreadRepository = getManager().getRepository(
