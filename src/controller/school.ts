@@ -38,7 +38,7 @@ export default class UserController {
     const schools: School[] = await schoolRepository.find();
 
     function alphabeticalSort(name) {
-      var sortOrder = 1;
+      let sortOrder = 1;
 
       if (name[0] === '-') {
         sortOrder = -1;
