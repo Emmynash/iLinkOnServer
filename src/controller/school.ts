@@ -39,8 +39,8 @@ export default class UserController {
 
     // return OK status code and loaded schools array
     ctx.status = httpStatus.OK;
-    schools.sort();
-    ctx.state.data = schools;
+    const sortSchools = schools.sort();
+    ctx.state.data = sortSchools;
     await next();
   }
 
