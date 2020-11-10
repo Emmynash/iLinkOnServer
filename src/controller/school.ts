@@ -37,9 +37,26 @@ export default class UserController {
     // load all schools
     const schools: School[] = await schoolRepository.find();
 
+    function alphabeticalSort(name) {
+      var sortOrder = 1;
+
+      if (name[0] === '-') {
+        sortOrder = -1;
+        name = name.substr(1);
+      }
+
+      return function (a, b) {
+        if (sortOrder == -1) {
+          return b[name].localeCompare(a[name]);
+        } else {
+          return a[name].localeCompare(b[name]);
+        }
+      };
+    }
+
     // return OK status code and loaded schools array
     ctx.status = httpStatus.OK;
-    const sortSchools = schools.sort();
+    const sortSchools = schools.sort(alphabeticalSort('name'));
     ctx.state.data = sortSchools;
     await next();
   }
