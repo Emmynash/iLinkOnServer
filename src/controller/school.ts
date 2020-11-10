@@ -175,12 +175,7 @@ export default class UserController {
       // return a BAD REQUEST status code and error message
       ctx.status = 400;
       ctx.state.message =
-        "The user you are trying to delete doesn't exist in the db";
-    } else if (ctx.state.user.name !== schoolToRemove.name) {
-      // check user's token id and user id are the same
-      // if not, return a FORBIDDEN status code and error message
-      ctx.status = httpStatus.FORBIDDEN;
-      ctx.state.message = 'A user can only be deleted by himself';
+        "The school you are trying to delete doesn't exist in the db";
     } else {
       // the user is there so can be removed
       await schoolRepository.remove(schoolToRemove);
