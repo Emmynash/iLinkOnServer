@@ -64,9 +64,10 @@ export default class AuthController {
       .skip(page * pageSize)
       .take(pageSize)
       .getMany();
-
+    messageThreads.reverse();
     ctx.status = HttpStatus.OK;
     ctx.state.data = messageThreads;
+
     await next();
   }
 
@@ -95,6 +96,7 @@ export default class AuthController {
       return message.secondParticipantfName !== ctx.state.user.fName;
     });
 
+    data.reverse();
     // return OK status code and loaded messagethread array
     ctx.status = HttpStatus.OK;
     ctx.state.data = data;
