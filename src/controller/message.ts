@@ -68,8 +68,6 @@ export default class AuthController {
     ctx.status = HttpStatus.OK;
     ctx.state.data = messageThreads;
 
-    console.log(messageThreads);
-
     await next();
   }
 
@@ -102,6 +100,8 @@ export default class AuthController {
     // return OK status code and loaded messagethread array
     ctx.status = HttpStatus.OK;
     ctx.state.data = data;
+
+    console.log(data);
     await next();
   }
 
