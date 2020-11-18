@@ -24,7 +24,7 @@ export interface IConfig {
     key: string;
     secret: string;
     cluster: string;
-    encrypted: boolean;
+    useTLS: boolean;
     restServer: string;
   };
 }
@@ -56,7 +56,7 @@ const config: IConfig = {
     key: process.env.PUSHER_APP_KEY,
     secret: process.env.PUSHER_APP_SECRET,
     cluster: 'eu',
-    encrypted: true,
+    useTLS: true,
     restServer: process.env.PUSHER_REST_SERVER,
   },
 };
