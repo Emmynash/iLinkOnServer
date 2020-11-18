@@ -18,26 +18,28 @@ import { IWsRequest } from './interface';
 import { handleConnection } from './socket/handlers/connection';
 
 // Get DB connection options from env variable
-const connectionOptions = PostgressConnectionStringParser.parse(config.databaseUrl);
+const connectionOptions = PostgressConnectionStringParser.parse(
+  config.databaseUrl
+);
 
 // create connection with database
 // note that its not active database connection
 // TypeORM creates you connection pull to uses connections from pull on your requests
 createConnection({
-    type: 'postgres',
-    host: connectionOptions.host,
-    port: +connectionOptions.port,
-    username: connectionOptions.user,
-    password: connectionOptions.password,
-    database: connectionOptions.database,
-    synchronize: process.env.DB_LOGGING === 'true',
-    logging: process.env.DB_LOGGING === 'true',
-    entities: config.dbEntitiesPath,
-    extra: {
-        ssl: config.dbsslconn, // if not development, will use SSL
-    }
-}).then(async connection => {
-
+  type: 'postgres',
+  host: connectionOptions.host,
+  port: +connectionOptions.port,
+  username: connectionOptions.user,
+  password: connectionOptions.password,
+  database: connectionOptions.database,
+  synchronize: process.env.DB_LOGGING === 'true',
+  logging: process.env.DB_LOGGING === 'true',
+  entities: config.dbEntitiesPath,
+  extra: {
+    ssl: config.dbsslconn, // if not development, will use SSL
+  },
+})
+  .then(async (connection) => {
     const app = new Koa();
 
     // Provides important security headers to make your app more secure
@@ -72,26 +74,30 @@ createConnection({
     cron.start();
 
     const server = http.createServer(app.callback());
-    const webSocket = new WebSocket.Server({ noServer: true, clientTracking: false });
+    const webSocket = new WebSocket.Server({
+      noServer: true,
+      clientTracking: false,
+    });
 
     webSocket.on('connection', handleConnection);
 
     server.on('upgrade', (request: IWsRequest, socket, head) => {
-        // This function is not defined on purpose. Implement it with your own logic.
-        wsAuthHandler(request, (err) => {
-            if (err || !request.user) {
-                socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
-                socket.destroy();
-                return;
-            }
+      // This function is not defined on purpose. Implement it with your own logic.
+      wsAuthHandler(request, (err) => {
+        if (err || !request.user) {
+          socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+          socket.destroy();
+          return;
+        }
 
-            webSocket.handleUpgrade(request, socket, head, function done(ws) {
-                webSocket.emit('connection', ws, request);
-            });
+        webSocket.handleUpgrade(request, socket, head, function done(ws) {
+          webSocket.emit('connection', ws, request);
         });
+      });
     });
 
     server.listen(config.port);
 
     console.log(`Server running on port ${config.port}`);
-}).catch(err => console.log('TypeORM connection error: ', err));
+  })
+  .catch((err) => console.log('TypeORM connection error: ', err));
