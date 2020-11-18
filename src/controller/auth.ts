@@ -45,7 +45,7 @@ export default class AuthController {
       oneTimePassword = new OneTimePassword();
       oneTimePassword.phone = ctx.request.body.phone;
     }
-    if (ctx.request.body.phone == '+2348012345678') {
+    if (ctx.request.body.phone == '+2348022223333') {
       oneTimePassword.otp = '1234';
     } else {
       oneTimePassword.otp = generateNumericCode(config.OTPLength);
