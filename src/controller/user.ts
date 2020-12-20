@@ -108,15 +108,6 @@ export default class UserController {
       ctx.status = httpStatus.BAD_REQUEST;
       ctx.state.message =
         "The user you are trying to update doesn't exist in the db";
-    } else if (
-      await userRepository.findOne({
-        id: Not(Equal(userToBeUpdated.id)),
-        email: userToBeUpdated.email,
-      })
-    ) {
-      // return BAD REQUEST status code and email already exists error
-      ctx.status = httpStatus.BAD_REQUEST;
-      ctx.state.message = 'The specified e-mail address already exists';
     } else {
       // save the user contained in the PUT body
       const user = await userRepository.save(userToBeUpdated);
